@@ -1,0 +1,45 @@
+[
+	{
+		"id": "selection",
+		"children":
+		[
+			{
+				"id": "translate",
+				"command": "translate",
+				"caption": "Translate"
+			},
+			{
+				"id": "genbanktofasta",
+				"command": "genbanktofasta",
+				"caption": "Genbank To Fasta"
+			}
+		],
+	},
+	{
+        "caption": "Preferences",
+        "mnemonic": "n",
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "SublimeBio",
+                        "children":
+                        [
+                            {
+                                "command": "open_file", 
+                                "args": {"file": "${packages}/SublimeBio/Plugin.py"},
+                                "caption": "BioPython Location – User"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
