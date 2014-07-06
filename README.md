@@ -10,8 +10,8 @@ BioPython utilities for Sublime Text 3
 ### Configure Plugin.py with the BioPython location
 - Sublime Text comes with its own embedded Python 3 interpreter
 - This interpreter needs to know where BioPython is installed so ...
-- Enter the name of directory containing BioPython into SublimeBio/Plugin.py:
-- Preferences -> Packages Settings -> SublimeBio -> BioPython Location - User  
+- Enter the name of directory containing BioPython into BioPythonUtils/Plugin.py:
+- Preferences -> Packages Settings -> BioPythonUtils -> BioPython Location - User  
 - For example:
 
 sys.path.append('/usr/local/lib/python3.4/site-packages')

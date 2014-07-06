@@ -28,12 +28,12 @@
                 "children":
                 [
                     {
-                        "caption": "SublimeBio",
+                        "caption": "BioPythonUtils",
                         "children":
                         [
                             {
                                 "command": "open_file", 
-                                "args": {"file": "${packages}/SublimeBio/Plugin.py"},
+                                "args": {"file": "${packages}/BioPythonUtils/Plugin.py"},
                                 "caption": "BioPython Location – User"
                             }
                         ]
