@@ -4,7 +4,7 @@ from Bio import SeqIO
 import io
 import re
 
-class GenbanktofastaCommand(sublime_plugin.TextCommand):
+class GenbankToFastaCommand(sublime_plugin.TextCommand):
 
 	def run(self,edit):
 

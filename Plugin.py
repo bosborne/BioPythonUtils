@@ -1,6 +1,8 @@
 import sys
 
-# Enter location of BioPython parent directory here
-sys.path.append('/usr/local/lib/python3.4/site-packages')
+biopython_location = view.settings().get('biopython_location')
 
-from Bio.Seq import Seq
+if biopython_location:
+	sys.path.append(biopython_location)
+else:
+	print("No BioPython location specified in BioPython Settings - User")

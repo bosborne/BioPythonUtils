@@ -9,8 +9,8 @@
 				"caption": "Translate"
 			},
 			{
-				"id": "genbanktofasta",
-				"command": "genbanktofasta",
+				"id": "genbank_to_fasta",
+				"command": "genbank_to_fasta",
 				"caption": "Genbank To Fasta"
 			}
 		],
@@ -33,8 +33,8 @@
                         [
                             {
                                 "command": "open_file", 
-                                "args": {"file": "${packages}/BioPythonUtils/Plugin.py"},
-                                "caption": "BioPython Location – User"
+                                "args": {"file": "${packages}/BioPythonUtils/BioPythonUtils.sublime-settings"},
+                                "caption": "BioPython Settings – User"
                             }
                         ]
                     }

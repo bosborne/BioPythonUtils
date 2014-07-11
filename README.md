@@ -10,26 +10,26 @@ BioPython utilities for Sublime Text 3
 ### Configure Plugin.py with the BioPython location
 - Sublime Text comes with its own embedded Python 3 interpreter
 - This interpreter needs to know where BioPython is installed so ...
-- Enter the name of directory containing BioPython into BioPythonUtils/Plugin.py:
-- Preferences -> Packages Settings -> BioPythonUtils -> BioPython Location - User  
+- Enter the name of directory containing BioPython using Preferences:
+- Preferences -> Packages Settings -> BioPythonUtils -> BioPython Settings - User  
 - For example:
 
-sys.path.append('/usr/local/lib/python3.4/site-packages')
+"biopython_location": "/usr/local/lib/python3.4/site-packages"
 
 ### Commands
 
-- "Translate" translates the selected text, which can be Fasta or plain text. For example:
+- "Translate" translates the selected text, which can be one or more entries in Fasta format or 1 entry of plain text. For example:
 ~~~~
-     >2
-     atgctatcaatcgcgattctgcttctgctaatagcagagggctcctctcaaaattacaca
-     ggaaatcctgtgatatgcctggggcaccatgctgtgtccaatgggacaatggtgaaaacc
-     >1
-     atgctatcaatcacgattctgttcctgctcatagcagagggctcctctcagaattacaca
-     gggaatcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacc
+>2
+atgctatcaatcgcgattctgcttctgctaatagcagagggctcctctcaaaattacaca
+ggaaatcctgtgatatgcctggggcaccatgctgtgtccaatgggacaatggtgaaaacc
+>1
+atgctatcaatcacgattctgttcctgctcatagcagagggctcctctcagaattacaca
+gggaatcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacc
 ~~~~
 or:
 ~~~~
-    atgctatcaatcacgattctgttcctgctcatagcagagggctcctctcagaattacaca
-    gggaatcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacc
+atgctatcaatcacgattctgttcctgctcatagcagagggctcctctcagaattacaca
+gggaatcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacc
 ~~~~
-- "Genbank To Fasta" converts the selection (GenBank) to Fasta format
+- "Genbank To Fasta" converts the selected entries (GenBank) to Fasta format
