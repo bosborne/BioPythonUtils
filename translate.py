@@ -54,13 +54,13 @@ class TranslateCommand(sublime_plugin.TextCommand):
 					invalid_chars = self.validate(str(nt_seq))
 					# and that it's all valid chars
 					if len(invalid_chars) > 0:
-						print("Invalid characters in sequence: " + ' '.join(invalid_chars))
+						sublime.error_message("Invalid characters in sequence: " + ' '.join(invalid_chars))
 					else:
 						aa_seq = nt_seq.translate()
 						# Write the translated sequence to a new window
 						self.view.window().new_file().insert(edit, 0, str(aa_seq))
 				else:
-					print("Sequence is too short to translate: " + seq_str)
+					sublime.error_message("Selection is too short to translate: " + seq_str)
 
 	# Checks that a sequence only contains values from an alphabet
 	def validate(self, seq):

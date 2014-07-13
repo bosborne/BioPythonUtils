@@ -1,4 +1,4 @@
 [
 	{ "keys": ["ctrl+alt+super+t"], "command": "translate" },
-	{ "keys": ["ctrl+alt+super+g"], "command": "genbanktofasta" }
+	{ "keys": ["ctrl+alt+super+g"], "command": "genbank_to_fasta" }
 ]

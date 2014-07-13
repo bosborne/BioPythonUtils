@@ -1,8 +1,7 @@
 import sublime, sublime_plugin
-from Bio.Seq import Seq
-from Bio import SeqIO
 import io
 import re
+from Bio import SeqIO
 
 class GenbankToFastaCommand(sublime_plugin.TextCommand):
 
@@ -12,20 +11,23 @@ class GenbankToFastaCommand(sublime_plugin.TextCommand):
 			seq_str = self.view.substr(region)
 			seq_str = seq_str.strip()
 
-			# Check that the selection begins as expected
-			startmatch = re.match( r'^LOCUS', seq_str )
-			# It turns out that SeqIO can handle Genbank format that
-			# does not end in '//' so there is no need to check for this
-
-			if not startmatch:
-				print("Selected text must begin with 'LOCUS'")
+			if not seq_str:
+				sublime.error_message("No selected text")
 			else:
-				# Read from a string and write to a string
-				seqout = io.StringIO()
+				# Check that the selection begins as expected
+				startmatch = re.match( r'^LOCUS', seq_str )
+				# It turns out that SeqIO can handle Genbank format that
+				# does not end in '//' so there is no need to check for this
 
-				with io.StringIO(seq_str) as seqin:
-					SeqIO.convert(seqin, 'genbank', seqout, 'fasta')
-				seqin.close()
+				if not startmatch:
+					sublime.error_message("Selected text does not look like Genbank: no 'LOCUS'")
+				else:
+					# Read from a string and write to a string
+					seqout = io.StringIO()
 
-				# Write the fasta string to a new window at position 0			
-				self.view.window().new_file().insert(edit, 0, seqout.getvalue())
+					with io.StringIO(seq_str) as seqin:
+						SeqIO.convert(seqin, 'genbank', seqout, 'fasta')
+					seqin.close()
+
+					# Write the fasta string to a new window at position 0			
+					self.view.window().new_file().insert(edit, 0, seqout.getvalue())

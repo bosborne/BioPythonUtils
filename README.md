@@ -7,14 +7,19 @@ BioPython utilities for Sublime Text 3
 - Do "sudo easy_install -f http://biopython.org/DIST/ biopython"
 - Or see http://biopython.org/wiki/Download
 
-### Configure Plugin.py with the BioPython location
+### Configure with the BioPython location and email address
 - Sublime Text comes with its own embedded Python 3 interpreter
 - This interpreter needs to know where BioPython is installed so ...
-- Enter the name of directory containing BioPython using Preferences:
-- Preferences -> Packages Settings -> BioPythonUtils -> BioPython Settings - User  
+- Enter the name of directory containing BioPython:
+- Preferences -> Packages Settings -> BioPythonUtils -> Settings - User  
 - For example:
-
-"biopython_location": "/usr/local/lib/python3.4/site-packages"
+~~~~
+{
+    "package_directory": "/usr/local/lib/python3.4/site-packages",
+    "email_for_eutils": "briano@bioteam.net"
+}
+~~~~
+- The email address is required if you want to download from NCBI using EUtils
 
 ### Commands
 
