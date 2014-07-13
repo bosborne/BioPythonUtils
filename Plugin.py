@@ -2,7 +2,7 @@ import sublime
 import os
 import sys
 
-# The settings have to read after the plugin has loaded
+# The settings have to be read after the plugin has loaded
 def plugin_loaded():
 
 	settings = sublime.load_settings('BioPythonUtils.sublime-settings')

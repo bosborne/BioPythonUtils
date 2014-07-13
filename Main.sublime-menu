@@ -8,6 +8,11 @@
 				"command": "translate",
 				"caption": "Translate"
 			},
+            {
+                "id": "download_sequence",
+                "command": "download_sequence",
+                "caption": "Download Sequence"
+            },
 			{
 				"id": "genbank_to_fasta",
 				"command": "genbank_to_fasta",

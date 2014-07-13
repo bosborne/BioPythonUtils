@@ -1,9 +1,47 @@
 import sublime, sublime_plugin
-import re
 import io
-import sys
-import os
+import re
+#
+# "Download Nucleotide"
+#
+class DownloadSequenceCommand(sublime_plugin.TextCommand):
 
+	def run(self,edit):
+
+		from Bio import Entrez
+
+		settings = sublime.load_settings('BioPythonUtils.sublime-settings')
+		email_for_eutils = settings.get('email_for_eutils')
+
+		if not email_for_eutils:
+			sublime.error_message("Enter email address for EUtils in BioPythonUtils -> Settings - User")
+			pass
+		else:
+			Entrez.email = email_for_eutils
+
+		for region in self.view.sel():  
+
+			id_str = self.view.substr(region)
+			id_str = id_str.strip()
+
+			if not id_str:
+				sublime.error_message("No identifiers in selection")
+				continue
+
+			ids = re.split( '[\n\s,]+', id_str )
+			seq_txt = ''
+
+			for id in ids:
+
+				handle = Entrez.efetch(db="nucleotide", id=id, rettype="gb", retmode="text")
+				seq_txt = seq_txt + handle.read()
+
+			# Write the fasta string to a new window at position 0			
+			self.view.window().new_file().insert(edit, 0, seq_txt)
+
+#
+# "Translate"
+#
 class TranslateCommand(sublime_plugin.TextCommand):
 	# Valid chars
 	valid_bases = ['A','T','G','C','U']
@@ -71,16 +109,38 @@ class TranslateCommand(sublime_plugin.TextCommand):
 		invalid = list(set(seq_arr) - set(self.valid_bases))
 		return invalid
 
-# def plugin_loaded():
+#
+# "Genbank To Fasta"
+#
+class GenbankToFastaCommand(sublime_plugin.TextCommand):
 
-# 	settings = sublime.load_settings('BioPythonUtils.sublime-settings')
-# 	biopython_location = settings.get('package_directory')
+	def run(self,edit):
 
-# 	if biopython_location:
-# 		# This approach works if the specified path has a trailing slash or not
-# 		if os.path.exists( os.path.join(os.path.sep, biopython_location, 'Bio') ):
-# 			sys.path.append(biopython_location)
-# 		else:
-# 			sublime.error_message("'Bio' directory not found in directory '" + biopython_location + "'")
-# 	else:
-# 		sublime.error_message("Enter package directory in BioPythonUtils -> Settings - User")
+		from Bio import SeqIO
+
+		for region in self.view.sel():
+
+			seq_str = self.view.substr(region)
+			seq_str = seq_str.strip()
+
+			if not seq_str:
+				sublime.error_message("No selected text")
+			else:
+				# Check that the selection begins as expected
+				startmatch = re.match( r'^LOCUS', seq_str )
+				# It turns out that SeqIO can handle Genbank format that
+				# does not end in '//' so there is no need to check for this
+
+				if not startmatch:
+					sublime.error_message("Selected text does not look like Genbank: no 'LOCUS'")
+				else:
+					# Read from a string and write to a string
+					seqout = io.StringIO()
+
+					with io.StringIO(seq_str) as seqin:
+						SeqIO.convert(seqin, 'genbank', seqout, 'fasta')
+					seqin.close()
+
+					# Write the fasta string to a new window at position 0			
+					self.view.window().new_file().insert(edit, 0, seqout.getvalue())
+

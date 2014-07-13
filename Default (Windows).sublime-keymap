@@ -1,5 +1,5 @@
 [
 	{ "keys": ["ctrl+alt+super+t"], "command": "translate" },
 	{ "keys": ["ctrl+alt+super+g"], "command": "genbank_to_fasta" },
-	{ "keys": ["ctrl+alt+super+d"], "command": "download_using_id" }
+	{ "keys": ["ctrl+alt+super+d"], "command": "download_sequence" }
 ]

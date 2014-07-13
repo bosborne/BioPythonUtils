@@ -1,29 +1,5 @@
 [
     {
-        "caption": "Preferences: BioPythonUtils Key Bindings – Default",
-        "command": "open_file",
-        "args": {
-            "file": "${packages}/BioPythonUtils/Default (Windows).sublime-keymap",
-            "platform": "Windows"
-        }
-    },
-    {
-        "caption": "Preferences: BioPythonUtils Key Bindings – Default",
-        "command": "open_file",
-        "args": {
-            "file": "${packages}/BioPythonUtils/Default (OSX).sublime-keymap",
-            "platform": "OSX"
-        }
-    },
-    {
-        "caption": "Preferences: BioPythonUtils Key Bindings – Default",
-        "command": "open_file",
-        "args": {
-            "file": "${packages}/BioPythonUtils/Default (Linux).sublime-keymap",
-            "platform": "Linux"
-        }
-    },
-    {
         "caption": "Preferences: BioPythonUtils Key Bindings – User",
         "command": "open_file",
         "args": {
