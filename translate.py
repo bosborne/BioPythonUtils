@@ -1,16 +1,19 @@
 import sublime, sublime_plugin
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
-from Bio.Alphabet import IUPAC
-from Bio import SeqIO
 import re
 import io
+import sys
+import os
 
 class TranslateCommand(sublime_plugin.TextCommand):
 	# Valid chars
 	valid_bases = ['A','T','G','C','U']
 
 	def run(self,edit):
+
+		from Bio import SeqIO
+		from Bio.Seq import Seq
+		from Bio.SeqRecord import SeqRecord
+		from Bio.Alphabet import IUPAC
 
 		for region in self.view.sel():  
 			seq_str = self.view.substr(region)
@@ -67,3 +70,17 @@ class TranslateCommand(sublime_plugin.TextCommand):
 		seq_arr = list(seq.upper())
 		invalid = list(set(seq_arr) - set(self.valid_bases))
 		return invalid
+
+# def plugin_loaded():
+
+# 	settings = sublime.load_settings('BioPythonUtils.sublime-settings')
+# 	biopython_location = settings.get('package_directory')
+
+# 	if biopython_location:
+# 		# This approach works if the specified path has a trailing slash or not
+# 		if os.path.exists( os.path.join(os.path.sep, biopython_location, 'Bio') ):
+# 			sys.path.append(biopython_location)
+# 		else:
+# 			sublime.error_message("'Bio' directory not found in directory '" + biopython_location + "'")
+# 	else:
+# 		sublime.error_message("Enter package directory in BioPythonUtils -> Settings - User")

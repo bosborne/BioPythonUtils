@@ -1,13 +1,17 @@
 import sublime, sublime_plugin
 import io
 import re
-from Bio import SeqIO
+import os
+import sys
 
 class GenbankToFastaCommand(sublime_plugin.TextCommand):
 
 	def run(self,edit):
 
-		for region in self.view.sel():  
+		from Bio import SeqIO
+
+		for region in self.view.sel():
+
 			seq_str = self.view.substr(region)
 			seq_str = seq_str.strip()
 
@@ -31,3 +35,17 @@ class GenbankToFastaCommand(sublime_plugin.TextCommand):
 
 					# Write the fasta string to a new window at position 0			
 					self.view.window().new_file().insert(edit, 0, seqout.getvalue())
+
+# def plugin_loaded():
+
+# 	settings = sublime.load_settings('BioPythonUtils.sublime-settings')
+# 	biopython_location = settings.get('package_directory')
+
+# 	if biopython_location:
+# 		# This approach works if the specified path has a trailing slash or not
+# 		if os.path.exists( os.path.join(os.path.sep, biopython_location, 'Bio') ):
+# 			sys.path.append(biopython_location)
+# 		else:
+# 			sublime.error_message("'Bio' directory not found in directory '" + biopython_location + "'")
+# 	else:
+# 		sublime.error_message("Enter package directory in BioPythonUtils -> Settings - User")
