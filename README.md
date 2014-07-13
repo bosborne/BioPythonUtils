@@ -51,3 +51,6 @@ or:
 2
 KC781786
 ~~~~
+
+- "Download Taxon" downloads nucleotide sequence from NCBI using the selected NCBI Taxonomy ids. Ids can be delimited by commas, returns, or space. Note that some taxa have many members, and using those ids could give an "index out of range" error.
+

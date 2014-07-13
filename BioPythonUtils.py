@@ -1,6 +1,7 @@
 import sublime, sublime_plugin
 import io
 import re
+
 #
 # "Download Nucleotide"
 #
@@ -38,7 +39,56 @@ class DownloadSequenceCommand(sublime_plugin.TextCommand):
 					print(str(exception))
 					sublime.error_message("Error retrieving sequence using id '" + id + "'")
 
-				seq_txt = seq_txt + handle.read().strip()
+				seq_txt = seq_txt + handle.read()
+
+			# Write the fasta string to a new window at position 0			
+			self.view.window().new_file().insert(edit, 0, seq_txt)
+
+#
+# "Download Taxon"
+#
+class DownloadTaxonCommand(sublime_plugin.TextCommand):
+
+	def run(self,edit):
+
+		from Bio import Entrez
+
+		settings = sublime.load_settings('BioPythonUtils.sublime-settings')
+		email_for_eutils = settings.get('email_for_eutils')
+
+		if not email_for_eutils:
+			sublime.error_message("Enter email address for EUtils in BioPythonUtils -> Settings - User")
+			pass
+		else:
+			Entrez.email = email_for_eutils
+
+		for region in self.view.sel():  
+
+			id_str = self.view.substr(region)
+			id_str = id_str.strip()
+
+			if not id_str:
+				sublime.error_message("No identifiers in selection")
+				continue
+
+			taxids = re.split( '[\n\s,]+', id_str )
+			seq_txt = ''
+
+			for taxid in taxids:
+				try:
+					links = Entrez.read(Entrez.elink(dbfrom="taxonomy", db="nucleotide", id=taxid))
+				except (IOError) as exception:
+					print(str(exception))
+					sublime.error_message("Error retrieving sequence ids using id '" + taxid + "'")
+
+				for link in links[0]["LinkSetDb"][0]["Link"]:
+					try:
+						handle = Entrez.efetch(db="nucleotide", id=link['Id'], rettype="gb", retmode="text")
+					except (IOError) as exception:
+						print(str(exception))
+						sublime.error_message("Error retrieving sequence using id '" + link['Id'] + "'")
+
+					seq_txt = seq_txt + handle.read()
 
 			# Write the fasta string to a new window at position 0			
 			self.view.window().new_file().insert(edit, 0, seq_txt)

@@ -13,6 +13,11 @@
                 "command": "download_sequence",
                 "caption": "Download Sequence"
             },
+            {
+                "id": "download_taxon",
+                "command": "download_taxon",
+                "caption": "Download Taxon"
+            },
 			{
 				"id": "genbank_to_fasta",
 				"command": "genbank_to_fasta",
