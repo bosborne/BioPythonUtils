@@ -32,9 +32,13 @@ class DownloadSequenceCommand(sublime_plugin.TextCommand):
 			seq_txt = ''
 
 			for id in ids:
+				try:
+					handle = Entrez.efetch(db="nucleotide", id=id, rettype="gb", retmode="text")
+				except (IOError) as exception:
+					print(str(exception))
+					sublime.error_message("Error retrieving sequence using id '" + id + "'")
 
-				handle = Entrez.efetch(db="nucleotide", id=id, rettype="gb", retmode="text")
-				seq_txt = seq_txt + handle.read()
+				seq_txt = seq_txt + handle.read().strip()
 
 			# Write the fasta string to a new window at position 0			
 			self.view.window().new_file().insert(edit, 0, seq_txt)
