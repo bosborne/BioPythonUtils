@@ -3,7 +3,7 @@ import io
 import re
 
 #
-# "Download Nucleotide"
+# "Download Sequence"
 #
 class DownloadSequenceCommand(sublime_plugin.TextCommand):
 
@@ -177,9 +177,7 @@ class GenbankToFastaCommand(sublime_plugin.TextCommand):
 			seq_str = self.view.substr(region)
 			seq_str = seq_str.strip()
 
-			if not seq_str:
-				sublime.error_message("No selected text")
-			else:
+			if seq_str:
 				# Check that the selection begins as expected
 				startmatch = re.match( r'^LOCUS', seq_str )
 				# It turns out that SeqIO can handle Genbank format that
@@ -197,4 +195,6 @@ class GenbankToFastaCommand(sublime_plugin.TextCommand):
 
 					# Write the fasta string to a new window at position 0			
 					self.view.window().new_file().insert(edit, 0, seqout.getvalue())
+			else:
+				sublime.error_message("No selected text")
 
