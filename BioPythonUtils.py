@@ -97,8 +97,6 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
 # "Translate"
 #
 class TranslateCommand(sublime_plugin.TextCommand):
-	# Valid chars
-	valid_bases = ['A','T','G','C','U']
 
 	def run(self,edit):
 
@@ -107,6 +105,9 @@ class TranslateCommand(sublime_plugin.TextCommand):
 		from Bio.SeqRecord import SeqRecord
 		from Bio.Alphabet import IUPAC
 
+		# {'G', 'T', 'U', 'C', 'A'}
+		valid_bases = set(IUPAC.unambiguous_dna.letters + IUPAC.unambiguous_rna.letters)
+		
 		for region in self.view.sel():  
 			seq_str = self.view.substr(region)
 		
@@ -122,8 +123,8 @@ class TranslateCommand(sublime_plugin.TextCommand):
 					for nt_seq_record in SeqIO.parse(seqin, "fasta"):
 
 						if len( str(nt_seq_record.seq) ) < 3:
-							print("Sequence is too short to translate: " + str(nt_seq_record.seq) )
-							continue
+							sublime.error_message("Sequence is too short to translate: " + str(nt_seq_record.seq) )
+							return
 
 						# translate() returns a string
 						aa_seq = nt_seq_record.seq.translate()
@@ -146,10 +147,10 @@ class TranslateCommand(sublime_plugin.TextCommand):
 				if len(seq_str) > 2:
 					nt_seq = Seq(seq_str, IUPAC.unambiguous_dna)
 
-					invalid_chars = self.validate(str(nt_seq))
+					invalid_chars = self.validate(str(nt_seq), valid_bases)
 					# and that it's all valid chars
 					if len(invalid_chars) > 0:
-						sublime.error_message("Invalid characters in sequence: " + ' '.join(invalid_chars))
+						sublime.error_message("Invalid characters in sequence: " + ''.join(invalid_chars))
 						return
 					else:
 						aa_seq = nt_seq.translate()
@@ -160,9 +161,9 @@ class TranslateCommand(sublime_plugin.TextCommand):
 					return
 
 	# Checks that a sequence only contains values from an alphabet
-	def validate(self, seq):
+	def validate(self, seq, valid_bases):
 		seq_arr = list(seq.upper())
-		invalid = list(set(seq_arr) - set(self.valid_bases))
+		invalid = list(set( seq_arr) - valid_bases )
 		return invalid
 
 #
