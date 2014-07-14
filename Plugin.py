@@ -13,6 +13,6 @@ def plugin_loaded():
 		if os.path.exists( os.path.join(os.path.sep, biopython_location, 'Bio') ):
 			sys.path.append(biopython_location)
 		else:
-			sublime.error_message("'Bio' directory not found in directory '" + biopython_location + "'")
+			sublime.error_message("BioPython 'Bio' directory not found in directory '" + biopython_location + "'")
 	else:
 		sublime.error_message("Enter package directory in BioPythonUtils -> Settings - User")
