@@ -188,6 +188,7 @@ class GenbankToFastaCommand(sublime_plugin.TextCommand):
 
 				if not startmatch:
 					sublime.error_message("Selected text does not look like Genbank: no 'LOCUS'")
+					return
 				else:
 					# Read from a string and write to a string
 					seqout = io.StringIO()
@@ -200,4 +201,5 @@ class GenbankToFastaCommand(sublime_plugin.TextCommand):
 					self.view.window().new_file().insert(edit, 0, seqout.getvalue())
 			else:
 				sublime.error_message("No selected text")
+				return
 

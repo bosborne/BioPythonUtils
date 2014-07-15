@@ -8,7 +8,7 @@ BioPython utilities for Sublime Text 3
 - Or see http://biopython.org/wiki/Download
 
 ### Install BioPythonUtils using Package Control
-- If you don't have Package control see https://sublime.wbond.net
+- If you don't have Package Control see https://sublime.wbond.net
 
 ### Configure with the BioPython location and email address
 - Sublime Text comes with its own embedded Python 3 interpreter
