@@ -42,7 +42,7 @@ gggaatcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacc
 ~~~~
 - "Genbank To Fasta" converts the selected entries (GenBank) to Fasta format
 
-- "Download Nucleotide" downloads sequence from NCBI using the selected ids. Ids can be delimited by commas, returns, or space. For example:
+- "Download Sequence" downloads sequence from NCBI using the selected ids. Ids can be delimited by commas, returns, or space. For example:
 ~~~~
 KC781785 2
 ~~~~
