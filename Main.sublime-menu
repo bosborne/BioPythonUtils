@@ -1,8 +1,8 @@
 [
-	{
-		"id": "selection",
-		"children":
-		[
+    {
+        "id": "selection",
+        "children":
+        [
         {
             "caption": "BioPythonUtils",
             "id": "biopythonutils",
@@ -30,9 +30,9 @@
                 }
             ]
         }
-		],
-	},
-	{
+        ],
+    },
+    {
         "caption": "Preferences",
         "mnemonic": "n",
         "id": "preferences",

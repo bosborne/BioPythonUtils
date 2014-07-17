@@ -1,4 +1,4 @@
 {
-	"email_for_eutils": "", // This email address will be used for EUtils queries
-	"package_directory": "" // Name of directory containing the 'Bio' directory
+    "email_for_eutils": "", // This email address will be used for EUtils queries
+    "package_directory": "" // Name of directory containing the 'Bio' directory
 }
