@@ -2,6 +2,7 @@ import os
 import sys
 import sublime
 
+
 # The settings have to be read after the plugin has loaded
 def plugin_loaded():
 
@@ -10,9 +11,11 @@ def plugin_loaded():
 
     if biopython_location:
         # This approach works if the specified path has a trailing slash or not
-        if os.path.exists( os.path.join(os.path.sep, biopython_location, 'Bio') ):
+        if os.path.exists(os.path.join(os.path.sep, biopython_location, 'Bio')):
             sys.path.append(biopython_location)
         else:
-            sublime.error_message("BioPython 'Bio' directory not found in directory '" + biopython_location + "'")
+            sublime.error_message(
+                "BioPython 'Bio' directory not found in directory '" + biopython_location + "'")
     else:
-        sublime.error_message("Enter package directory in BioPythonUtils -> Settings - User")
+        sublime.error_message(
+            "Enter package directory in BioPythonUtils -> Settings - User")
