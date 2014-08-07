@@ -13,7 +13,7 @@ BioPython utilities for Sublime Text 3
 ### Configure with the BioPython location and email address
 - Sublime Text comes with its own embedded Python 3 interpreter
 - This interpreter needs to know where BioPython is installed so ...
-- Enter the name of directory containing BioPython:
+- Enter the name of the directory containing BioPython:
 - Preferences -> Packages Settings -> BioPythonUtils -> Settings - User  
 - For example:
 ~~~~
