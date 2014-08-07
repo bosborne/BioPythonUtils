@@ -78,6 +78,14 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
             seq_txt = ''
 
             for taxid in taxids:
+                # Check for numeric ids
+                nummatch = re.match(r'^\d+$', taxid)
+
+                if not nummatch:
+                    sublime.error_message(
+                        "String '" + taxid + "' is not an NCBI taxon id")
+                    return
+
                 try:
                     links = Entrez.read(
                         Entrez.elink(dbfrom="taxonomy", db="nucleotide", id=taxid))
@@ -105,8 +113,7 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
 class TranslateCommand(sublime_plugin.TextCommand):
 
     # {'G', 'T', 'U', 'C', 'A'}
-    valid_bases = set(
-        IUPAC.unambiguous_dna.letters + IUPAC.unambiguous_rna.letters)
+    valid_bases = set(IUPAC.unambiguous_dna.letters + IUPAC.unambiguous_rna.letters)
 
     def run(self, edit):
 
