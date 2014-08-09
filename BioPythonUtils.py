@@ -153,27 +153,33 @@ class TranslateCommand(sublime_plugin.TextCommand):
                     edit, 0, seqout.getvalue())
 
             else:
-                # If it's not fasta then remove non-alphabetic ...
-                seq_str = re.sub(r'[^A-Za-z]+', r'', seq_str)
-                # and check that it's at least one codon long ...
-                if len(seq_str) > 2:
-                    nt_seq = Seq(seq_str, IUPAC.unambiguous_dna)
+                seqout = []
+                seq_num = 1
+                # Could be more than one sequence, "MULTILINE" required here
+                for nt_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
 
-                    invalid_chars = self.validate(str(nt_seq))
-                    # and that it's all valid chars
-                    if len(invalid_chars) > 0:
-                        sublime.error_message(
-                            "Invalid characters in sequence: " + ''.join(invalid_chars))
-                        return
+                    # If it's not fasta then remove non-alphabetic ...
+                    nt_str = re.sub(r'[^A-Za-z]+', r'', nt_str)
+                    # and check that it's at least one codon long ...
+                    if len(nt_str) > 2:
+                        nt_seq = Seq(nt_str, IUPAC.unambiguous_dna)
+
+                        invalid_chars = self.validate(str(nt_seq))
+                        # and that it's all valid chars
+                        if len(invalid_chars) > 0:
+                            sublime.error_message("Invalid characters in sequence " 
+                                + str(seq_num) + ": " + ''.join(invalid_chars))
+                            return
+                        else:
+                            aa_seq = nt_seq.translate()
+                            seqout.append(str(aa_seq))
+                            seq_num += 1
                     else:
-                        aa_seq = nt_seq.translate()
-                        # Write the translated sequence to a new window
-                        self.view.window().new_file().insert(
-                            edit, 0, str(aa_seq))
-                else:
-                    sublime.error_message(
-                        "Selection is too short to translate: " + seq_str)
-                    return
+                        sublime.error_message(
+                            "Selection is too short to translate: " + nt_str)
+                        return
+                # Separate the translations with an empty line
+                self.view.window().new_file().insert(edit, 0, "\n\n".join(seqout) )
 
     # Checks that a sequence only contains values from an alphabet
     def validate(self, seq):

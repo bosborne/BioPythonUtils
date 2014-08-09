@@ -26,7 +26,7 @@ BioPython utilities for Sublime Text 3
 
 ### Commands
 
-- "Translate" translates the selected text, which can be one or more entries in Fasta format or 1 entry of plain text. For example:
+- "Translate" translates the selected text, which can be one or more entries in Fasta format or 1 or more entries of plain text. For example:
 ~~~~
 >2
 atgctatcaatcgcgattctgcttctgctaatagcagagggctcctctcaaaattacaca
@@ -39,6 +39,9 @@ or:
 ~~~~
 atgctatcaatcacgattctgttcctgctcatagcagagggctcctctcagaattacaca
 gggaatcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacc
+
+atgctgtcaatcacgattctgttggtgctcatagcagagggctcctctcagaattacacg
+gggagtcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacg
 ~~~~
 - "Genbank To Fasta" converts the selected entries (GenBank) to Fasta format
 
