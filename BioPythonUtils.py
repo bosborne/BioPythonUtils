@@ -18,7 +18,7 @@ class DownloadSequenceCommand(sublime_plugin.TextCommand):
 
         if not email_for_eutils:
             sublime.error_message(
-                "Enter email address for EUtils in BioPythonUtils -> Settings - User")
+            "Enter email address for EUtils in BioPythonUtils -> Settings - User")
             return
         else:
             Entrez.email = email_for_eutils
@@ -37,8 +37,10 @@ class DownloadSequenceCommand(sublime_plugin.TextCommand):
 
             for id in ids:
                 try:
-                    handle = Entrez.efetch(
-                        db="nucleotide", id=id, rettype="gb", retmode="text")
+                    handle = Entrez.efetch(db="nucleotide",
+                                           id=id,
+                                           rettype="gb",
+                                           retmode="text")
                 except (IOError) as exception:
                     print(str(exception))
                     sublime.error_message(
@@ -88,7 +90,9 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
 
                 try:
                     links = Entrez.read(
-                        Entrez.elink(dbfrom="taxonomy", db="nucleotide", id=taxid))
+                        Entrez.elink(dbfrom="taxonomy",
+                                     db="nucleotide",
+                                     id=taxid))
                 except (IOError) as exception:
                     print(str(exception))
                     sublime.error_message(
@@ -96,12 +100,14 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
 
                 for link in links[0]["LinkSetDb"][0]["Link"]:
                     try:
-                        handle = Entrez.efetch(
-                            db="nucleotide", id=link['Id'], rettype="gb", retmode="text")
+                        handle = Entrez.efetch(db="nucleotide",
+                                               id=link['Id'],
+                                               rettype="gb",
+                                               retmode="text")
                     except (IOError) as exception:
                         print(str(exception))
-                        sublime.error_message(
-                            "Error retrieving sequence using id '" + link['Id'] + "'")
+                        sublime.error_message("Error retrieving sequence using id '" +
+                                              link['Id'] + "'")
 
                     seq_txt = seq_txt + handle.read()
 
@@ -113,7 +119,8 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
 class TranslateCommand(sublime_plugin.TextCommand):
 
     # {'G', 'T', 'U', 'C', 'A'}
-    valid_bases = set(IUPAC.unambiguous_dna.letters + IUPAC.unambiguous_rna.letters)
+    valid_bases = set(IUPAC.unambiguous_dna.letters +
+                      IUPAC.unambiguous_rna.letters)
 
     def run(self, edit):
 
@@ -133,7 +140,8 @@ class TranslateCommand(sublime_plugin.TextCommand):
 
                         if len(str(nt_seq_record.seq)) < 3:
                             sublime.error_message(
-                                "Sequence is too short to translate: " + str(nt_seq_record.seq))
+                                "Sequence is too short to translate: " +
+                                str(nt_seq_record.seq))
                             return
 
                         # translate() returns a string
@@ -155,7 +163,7 @@ class TranslateCommand(sublime_plugin.TextCommand):
             else:
                 seqout = []
                 seq_num = 1
-                # Could be more than one sequence, "MULTILINE" required here
+                # Could be more than one sequence, "MULTILINE" required 
                 for nt_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
 
                     # If it's not fasta then remove non-alphabetic ...

@@ -5,6 +5,7 @@ BioPython utilities for Sublime Text 3
 
 ### Install BioPython for Python 3
 - Do "sudo easy_install -f http://biopython.org/DIST/ biopython"
+- Or do "pip3 install biopython"
 - Or see http://biopython.org/wiki/Download
 
 ### Install BioPythonUtils using Package Control
