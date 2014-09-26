@@ -98,6 +98,10 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
                     sublime.error_message(
                         "Error retrieving sequence ids using id '" + taxid + "'")
 
+                if len(links[0]["LinkSetDb"]) == 0:
+                    sublime.error_message("No sequences retrieved with id " + taxid)
+                    return
+
                 for link in links[0]["LinkSetDb"][0]["Link"]:
                     try:
                         handle = Entrez.efetch(db="nucleotide",
