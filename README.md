@@ -24,9 +24,9 @@ If you don't have Package Control see https://sublime.wbond.net.
 {
     "package_directory": "/usr/local/lib/python3.4/site-packages",
     "email_for_eutils": "bio@bioteam.net",
-    "default_blast_app": "blastp",
-    "default_blast_db": "nr",
-    "default_blast_format": "Text"
+    "remote_blast_app": "blastp",
+    "remote_blast_db": "nr",
+    "remote_blast_format": "Text"
 }
 ~~~~
 

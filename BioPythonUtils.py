@@ -239,13 +239,13 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
         global blast_app, blast_db, blast_format
         
         if blast_app is None:
-            blast_app = sublime.load_settings('BioPythonUtils.sublime-settings').get('default_blast_app')
+            blast_app = sublime.load_settings('BioPythonUtils.sublime-settings').get('remote_blast_app')
  
         if blast_db is None:
-            blast_db = sublime.load_settings('BioPythonUtils.sublime-settings').get('default_blast_db')
+            blast_db = sublime.load_settings('BioPythonUtils.sublime-settings').get('remote_blast_db')
 
         if blast_format is None:
-            blast_format = sublime.load_settings('BioPythonUtils.sublime-settings').get('default_blast_format')
+            blast_format = sublime.load_settings('BioPythonUtils.sublime-settings').get('remote_blast_format')
 
         if not blast_db:
             sublime.error_message("No BLAST database specified")
