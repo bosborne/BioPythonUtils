@@ -11,7 +11,7 @@ BioPython utilities for Sublime Text 3
 
 ### Install BioPythonUtils using Package Control
 
-If you don't have Package Control see https://sublime.wbond.net
+If you don't have Package Control see https://sublime.wbond.net.
 
 ### Configure with the BioPython location, email or BLAST defaults
 
@@ -68,7 +68,7 @@ or:
 KC781786
 ~~~~
 
-Add an email address to your Settings file (""email_for_eutils") if you want to download from NCBI using EUtils.
+Add an email address to your Settings file ("email_for_eutils") if you want to download from NCBI using EUtils.
 
 #### "Genbank To Fasta"
 
@@ -83,7 +83,7 @@ For example:
 284218, 203807
 ~~~~
 
-Add an email address to your Settings file (""email_for_eutils") if you want to download from NCBI using EUtils.
+Add an email address to your Settings file ("email_for_eutils") if you want to download from NCBI using EUtils.
 
 #### "Remote BLAST"
 
