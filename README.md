@@ -13,18 +13,20 @@ BioPython utilities for Sublime Text 3
 
 If you don't have Package Control see https://sublime.wbond.net.
 
-### Configure with the BioPython location, email or BLAST defaults
+### Configure with the BioPython location, email, or BLAST defaults
 
 * Sublime Text comes with its own embedded Python 3 interpreter
 * This interpreter needs to know where BioPython is installed so ...
 * Enter the name of the directory containing BioPython:
-* Preferences -> Packages Settings -> BioPythonUtils -> Settings - User  
+* Preferences -> Packages Setting -> BioPythonUtils -> Settings - User  
 * For example:
 ~~~~
 {
     "package_directory": "/usr/local/lib/python3.4/site-packages",
     "email_for_eutils": "bio@bioteam.net",
-    "default_blast_app": "blastp"
+    "default_blast_app": "blastp",
+    "default_blast_db": "nr",
+    "default_blast_format": "Text"
 }
 ~~~~
 
@@ -68,7 +70,7 @@ or:
 KC781786
 ~~~~
 
-Add an email address to your Settings file ("email_for_eutils") if you want to download from NCBI using EUtils.
+Add an email address to your "Settings - User" file ("email_for_eutils") if you want to download from NCBI using EUtils.
 
 #### "Genbank To Fasta"
 
@@ -83,11 +85,11 @@ For example:
 284218, 203807
 ~~~~
 
-Add an email address to your Settings file ("email_for_eutils") if you want to download from NCBI using EUtils.
+Add an email address to your "Settings - User" file ("email_for_eutils") if you want to download from NCBI using EUtils.
 
 #### "Remote BLAST"
 
-Sends the selected Fasta format or "plain" sequence(s) to the BLAST server at NCBI and retrieves the results. Set the application, database, and result format using the Command Palette. You can also set default values for these in your Settings file.
+Sends the selected Fasta format or "plain" sequence(s) to the BLAST server at NCBI and retrieves the results. Set the application, database, and result format using the Command Palette. You can also set default values for these in your "Settings - User" file.
 
 
 
