@@ -22,5 +22,17 @@
             "file": "${packages}/User/Default (Linux).sublime-keymap",
             "platform": "Linux"
         }
-    }
+    },
+    {
+    "caption": "BioPythonUtils: Select Remote BLAST database",
+    "command": "select_blast_database"
+    },
+    {
+    "caption": "BioPythonUtils: Select Remote BLAST format",
+    "command": "select_blast_format"
+    },
+    {
+    "caption": "BioPythonUtils: Select Remote BLAST application",
+    "command": "select_blast_application"
+  }
 ]

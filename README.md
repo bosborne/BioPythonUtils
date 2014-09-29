@@ -4,30 +4,41 @@ BioPythonUtils
 BioPython utilities for Sublime Text 3
 
 ### Install BioPython for Python 3
-- Do "easy_install -f http://biopython.org/DIST/ biopython"
-- Or do "pip3 install biopython"
-- Or see http://biopython.org/wiki/Download
+
+* Do "easy_install -f http://biopython.org/DIST/ biopython"
+* Or do "pip3 install biopython"
+* Or see http://biopython.org/wiki/Download
 
 ### Install BioPythonUtils using Package Control
-- If you don't have Package Control see https://sublime.wbond.net
 
-### Configure with the BioPython location and email address
-- Sublime Text comes with its own embedded Python 3 interpreter
-- This interpreter needs to know where BioPython is installed so ...
-- Enter the name of the directory containing BioPython:
-- Preferences -> Packages Settings -> BioPythonUtils -> Settings - User  
-- For example:
+If you don't have Package Control see https://sublime.wbond.net
+
+### Configure with the BioPython location, email or BLAST defaults
+
+* Sublime Text comes with its own embedded Python 3 interpreter
+* This interpreter needs to know where BioPython is installed so ...
+* Enter the name of the directory containing BioPython:
+* Preferences -> Packages Settings -> BioPythonUtils -> Settings - User  
+* For example:
 ~~~~
 {
     "package_directory": "/usr/local/lib/python3.4/site-packages",
-    "email_for_eutils": "bio@bioteam.net"
+    "email_for_eutils": "bio@bioteam.net",
+    "default_blast_app": "blastp"
 }
 ~~~~
-- The email address is required if you want to download from NCBI using EUtils
 
 ### Commands
 
-- "Translate" translates the selected text, which can be one or more entries in Fasta format or 1 or more entries of plain text. For example:
+* "Translate"
+* "Download Sequence"
+* "Download Taxon"
+* "Genbank To Fasta"
+* "Remote BLAST"
+
+#### "Translate"
+
+Translates the selected text, which can be one or more entries in Fasta format or 1 or more entries of plain text. For example:
 ~~~~
 >2
 atgctatcaatcgcgattctgcttctgctaatagcagagggctcctctcaaaattacaca
@@ -44,9 +55,10 @@ gggaatcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacc
 atgctgtcaatcacgattctgttggtgctcatagcagagggctcctctcagaattacacg
 gggagtcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacg
 ~~~~
-- "Genbank To Fasta" converts the selected entries (GenBank) to Fasta format
 
-- "Download Sequence" downloads sequence from NCBI using the selected ids. Ids can be delimited by commas, returns, or space. For example:
+#### "Download Sequence" 
+
+Downloads sequence from NCBI using the selected ids. Ids can be delimited by commas, returns, or space. For example:
 ~~~~
 KC781785 2
 ~~~~
@@ -56,9 +68,27 @@ or:
 KC781786
 ~~~~
 
-- "Download Taxon" downloads nucleotide sequence from NCBI using the selected NCBI Taxonomy ids. Ids can be delimited by commas, returns, or space. For example:
+Add an email address to your Settings file (""email_for_eutils") if you want to download from NCBI using EUtils.
+
+#### "Genbank To Fasta"
+
+Converts the selected Genbank entries to Fasta format.
+
+#### "Download Taxon" 
+
+Downloads nucleotide sequence from NCBI using the selected NCBI Taxonomy ids. Ids can be delimited by commas, returns, or space.
+
+For example:
 ~~~~
 284218, 203807
 ~~~~
-Note that some taxa have many linked sequences, and using these taxon ids could give an "index out of range" error.
+
+Add an email address to your Settings file (""email_for_eutils") if you want to download from NCBI using EUtils.
+
+#### "Remote BLAST"
+
+Sends the selected Fasta format or "plain" sequence(s) to the BLAST server at NCBI and retrieves the results. Set the application, database, and result format using the Command Palette. You can also set default values for these in your Settings file.
+
+
+
 

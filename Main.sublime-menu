@@ -27,6 +27,11 @@
                     "id": "genbank_to_fasta",
                     "command": "genbank_to_fasta",
                     "caption": "Genbank To Fasta"
+                },
+                {
+                    "id": "remote_blast",
+                    "command": "remote_blast",
+                    "caption": "Remote BLAST"
                 }
             ]
         }

@@ -6,15 +6,18 @@ from Bio import SeqIO, Entrez
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
+from Bio.Blast import NCBIWWW
 
+blast_app = None
+blast_db = None
+blast_format = None
 
 # "Download Sequence"
 class DownloadSequenceCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
 
-        settings = sublime.load_settings('BioPythonUtils.sublime-settings')
-        email_for_eutils = settings.get('email_for_eutils')
+        email_for_eutils = sublime.load_settings('BioPythonUtils.sublime-settings').get('email_for_eutils')
 
         if not email_for_eutils:
             sublime.error_message(
@@ -57,8 +60,7 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
 
-        settings = sublime.load_settings('BioPythonUtils.sublime-settings')
-        email_for_eutils = settings.get('email_for_eutils')
+        email_for_eutils = sublime.load_settings('BioPythonUtils.sublime-settings').get('email_for_eutils')
 
         if not email_for_eutils:
             sublime.error_message(
@@ -122,10 +124,6 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
 # "Translate"
 class TranslateCommand(sublime_plugin.TextCommand):
 
-    # {'G', 'T', 'U', 'C', 'A'}
-    valid_bases = set(IUPAC.unambiguous_dna.letters +
-                      IUPAC.unambiguous_rna.letters)
-
     def run(self, edit):
 
         for region in self.view.sel():
@@ -176,7 +174,7 @@ class TranslateCommand(sublime_plugin.TextCommand):
                     if len(nt_str) > 2:
                         nt_seq = Seq(nt_str, IUPAC.unambiguous_dna)
 
-                        invalid_chars = self.validate(str(nt_seq))
+                        invalid_chars = validate_nt(str(nt_seq))
                         # and that it's all valid chars
                         if len(invalid_chars) > 0:
                             sublime.error_message("Invalid characters in sequence " 
@@ -192,12 +190,6 @@ class TranslateCommand(sublime_plugin.TextCommand):
                         return
                 # Separate the translations with an empty line
                 self.view.window().new_file().insert(edit, 0, "\n\n".join(seqout) )
-
-    # Checks that a sequence only contains values from an alphabet
-    def validate(self, seq):
-        seq_arr = list(seq.upper())
-        invalid = list(set(seq_arr) - self.valid_bases)
-        return invalid
 
 
 # "Genbank To Fasta"
@@ -234,3 +226,129 @@ class GenbankToFastaCommand(sublime_plugin.TextCommand):
             else:
                 sublime.error_message("No selected text")
                 return
+
+# "Remote Blast"
+class RemoteBlastCommand(sublime_plugin.TextCommand):
+
+    blast_apps = ['blastp', 'blastn', 'blastx', 'tblastn', 'tblastx']
+    blast_dbs = ['nr', 'refseq', 'swissprot', 'pat', 'month', 'pdb', 'env_nr']
+    blast_formats = ['HTML', 'Text', 'ASN.1', 'XML']
+
+    def run(self, edit):
+
+        global blast_app, blast_db, blast_format
+        
+        if blast_app is None:
+            blast_app = sublime.load_settings('BioPythonUtils.sublime-settings').get('default_blast_app')
+ 
+        if blast_db is None:
+            blast_db = sublime.load_settings('BioPythonUtils.sublime-settings').get('default_blast_db')
+
+        if blast_format is None:
+            blast_format = sublime.load_settings('BioPythonUtils.sublime-settings').get('default_blast_format')
+
+        if not blast_db:
+            sublime.error_message("No BLAST database specified")
+            return
+
+        if not blast_app:
+            sublime.error_message("No BLAST application specified")
+            return
+
+        if not blast_format:
+            sublime.error_message("No BLAST format specified")
+            return
+
+        for region in self.view.sel():
+            seq_str = self.view.substr(region)
+
+            # Fasta header pattern
+            patt = re.compile('^>\s*\S+')
+
+            # If the selection looks like Fasta
+            if patt.match(seq_str):
+                # Read from a string and write to a string
+                seqout = io.StringIO()
+
+                with io.StringIO(seq_str) as seqin:
+                    for seq_record in SeqIO.parse(seqin, "fasta"):
+                        result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
+                                                format_type=blast_format)
+                        # Write the fasta string to a new window at position 0
+                        self.view.window().new_file().insert(edit, 0, result.read())
+
+                    seqin.close()
+            else:
+                # Assume it's just sequence but there could be > 1 sequence,
+                # and just give the sequence an incrementing number as an id
+                seq_id = 1
+                for seq_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
+                    simple_seq = Seq(seq_str.strip())
+                    seq_record = SeqRecord(simple_seq, id=str(seq_id))
+                    seq_id += 1
+                    result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
+                                            format_type=blast_format)
+                    # Write the fasta string to a new window at position 0
+                    self.view.window().new_file().insert(edit, 0, result.read())
+
+
+class SelectBlastDatabase(sublime_plugin.WindowCommand):
+
+    def run(self):
+        cmd = RemoteBlastCommand
+        sublime.active_window().show_quick_panel(cmd.blast_dbs, setDatabase)
+
+
+class SelectBlastApplication(sublime_plugin.WindowCommand):
+
+    def run(self):
+        cmd = RemoteBlastCommand
+        sublime.active_window().show_quick_panel(cmd.blast_apps, setApplication)
+
+
+class SelectBlastFormat(sublime_plugin.WindowCommand):
+
+    def run(self):
+        cmd = RemoteBlastCommand
+        sublime.active_window().show_quick_panel(cmd.blast_formats, setFormat)
+
+
+def setFormat(index):
+    global blast_format
+    cmd = RemoteBlastCommand
+
+    if index > -1:
+        blast_format = cmd.blast_formats[index]
+
+
+def setDatabase(index):
+    global blast_db
+    cmd = RemoteBlastCommand
+
+    if index > -1:
+        blast_db = cmd.blast_dbs[index]
+
+
+def setApplication(index):
+    global blast_app
+    cmd = RemoteBlastCommand
+
+    if index > -1:
+        blast_app = cmd.blast_apps[index]
+
+
+def validate_nt(seq):
+    # {'G', 'T', 'U', 'C', 'A'}
+    valid_bases = set(IUPAC.unambiguous_dna.letters +
+                      IUPAC.unambiguous_rna.letters)
+
+    seq_arr = list(seq.upper())
+    invalid = list(set(seq_arr) - valid_bases)     
+    return invalid
+
+
+def validate_aa(seq):
+
+    seq_arr = list(seq.upper())
+    invalid = list(set(seq_arr) - set(IUPAC.protein.letters))     
+    return invalid
