@@ -19,7 +19,7 @@ If you don't have Package Control see https://sublime.wbond.net.
 * This interpreter needs to know where BioPython is installed so ...
 * Enter the name of the directory containing BioPython:
 * Preferences -> Packages Setting -> BioPythonUtils -> Settings - User  
-* For example:
+* Add the "package directory", for example:
 ~~~~
 {
     "package_directory": "/usr/local/lib/python3.4/site-packages",
