@@ -89,7 +89,7 @@ Add an email address to your "Settings - User" file ("email_for_eutils") if you 
 
 #### "Remote BLAST"
 
-Sends the selected Fasta format or "plain" sequence(s) to the BLAST server at NCBI and retrieves the results. Set the application, database, and result format using the Command Palette. You can also set default values for these in your "Settings - User" file.
+Sends the selected Fasta format or "plain" sequence(s) to the BLAST server at NCBI and retrieves the results. Set the application, database, and result format using the Command Palette. You can also set default values for these in your "Settings - User" file ("remote_blast_app", "remote_blast_db", "remote_blast_format").
 
 ### Issues
 
