@@ -91,6 +91,6 @@ Add an email address to your "Settings - User" file ("email_for_eutils") if you 
 
 Sends the selected Fasta format or "plain" sequence(s) to the BLAST server at NCBI and retrieves the results. Set the application, database, and result format using the Command Palette. You can also set default values for these in your "Settings - User" file.
 
+### Issues
 
-
-
+The interaction between the plugin and various services at NCBI are  synchronized, so Sublime Text is essentially unusable while the queries ("Download ...", Remote BLAST) are running. Not suitable for large-scale work, need to fix this.
