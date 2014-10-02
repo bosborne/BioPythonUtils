@@ -8,6 +8,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
 from Bio.Blast import NCBIWWW
 
+# Used by "Remote BLAST"
 blast_app = None
 blast_db = None
 blast_format = None
@@ -19,12 +20,12 @@ class DownloadSequenceCommand(sublime_plugin.TextCommand):
 
         email_for_eutils = sublime.load_settings('BioPythonUtils.sublime-settings').get('email_for_eutils')
 
-        if not email_for_eutils:
+        if email_for_eutils:
+            Entrez.email = email_for_eutils
+        else:
             sublime.error_message(
             "Enter email address for EUtils in BioPythonUtils -> Settings - User")
             return
-        else:
-            Entrez.email = email_for_eutils
 
         for region in self.view.sel():
 
@@ -62,12 +63,12 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
 
         email_for_eutils = sublime.load_settings('BioPythonUtils.sublime-settings').get('email_for_eutils')
 
-        if not email_for_eutils:
+        if email_for_eutils:
+            Entrez.email = email_for_eutils
+        else:
             sublime.error_message(
                 "Enter email address for EUtils in BioPythonUtils -> Settings - User")
             return
-        else:
-            Entrez.email = email_for_eutils
 
         for region in self.view.sel():
 
@@ -146,8 +147,13 @@ class TranslateCommand(sublime_plugin.TextCommand):
                                 str(nt_seq_record.seq))
                             return
 
-                        # translate() returns a string
-                        aa_seq = nt_seq_record.seq.translate()
+                        try:
+                            # translate() returns a string
+                            aa_seq = nt_seq_record.seq.translate()
+                        except (BaseException) as exception:
+                            print(str(exception))
+                            sublime.error_message(str(exception))
+
                         # Copy data to the protein SeqRecord from the starting
                         # nucleotide sequence
                         aa_seq_record = SeqRecord(aa_seq,
@@ -164,30 +170,34 @@ class TranslateCommand(sublime_plugin.TextCommand):
 
             else:
                 seqout = []
-                seq_num = 1
                 # Could be more than one sequence, "MULTILINE" required 
                 for nt_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
 
-                    # If it's not fasta then remove non-alphabetic ...
+                    # Remove non-alphabetic ...
                     nt_str = re.sub(r'[^A-Za-z]+', r'', nt_str)
-                    # and check that it's at least one codon long ...
-                    if len(nt_str) > 2:
-                        nt_seq = Seq(nt_str, IUPAC.unambiguous_dna)
-
-                        invalid_chars = validate_nt(str(nt_seq))
-                        # and that it's all valid chars
-                        if len(invalid_chars) > 0:
-                            sublime.error_message("Invalid characters in sequence " 
-                                + str(seq_num) + ": " + ''.join(invalid_chars))
-                            return
-                        else:
-                            aa_seq = nt_seq.translate()
-                            seqout.append(str(aa_seq))
-                            seq_num += 1
-                    else:
+                    # and check that it's at least one codon long
+                    if len(nt_str) < 3:
                         sublime.error_message(
                             "Selection is too short to translate: " + nt_str)
                         return
+
+                    nt_seq = Seq(nt_str, IUPAC.unambiguous_dna)
+                    # Check that it's all valid nucleotide
+                    invalid_chars = validate_nt(str(nt_seq))
+
+                    if len(invalid_chars) == 0:
+                        try:
+                            aa_seq = nt_seq.translate()
+                        except (BaseException) as exception:
+                            print(str(exception))
+                            sublime.error_message(str(exception))
+
+                        seqout.append(str(aa_seq))
+                    else:
+                        sublime.error_message("Invalid characters in sequence " 
+                                + str(seq_num) + ": " + ''.join(invalid_chars))
+                        return
+
                 # Separate the translations with an empty line
                 self.view.window().new_file().insert(edit, 0, "\n\n".join(seqout) )
 
