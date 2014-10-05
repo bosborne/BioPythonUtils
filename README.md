@@ -1,7 +1,7 @@
 BioPythonUtils
 ==============
 
-BioPython utilities for Sublime Text 3
+BioPython Utilities for Sublime Text 3
 
 ### Install BioPython for Python 3
 

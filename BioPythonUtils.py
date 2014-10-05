@@ -18,13 +18,14 @@ class DownloadSequenceCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
 
-        email_for_eutils = sublime.load_settings('BioPythonUtils.sublime-settings').get('email_for_eutils')
+        email_for_eutils = sublime.load_settings(
+            'BioPythonUtils.sublime-settings').get('email_for_eutils')
 
         if email_for_eutils:
             Entrez.email = email_for_eutils
         else:
             sublime.error_message(
-            "Enter email address for EUtils in BioPythonUtils -> Settings - User")
+                "Enter email address for EUtils in BioPythonUtils -> Settings - User")
             return
 
         for region in self.view.sel():
@@ -61,7 +62,8 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
 
-        email_for_eutils = sublime.load_settings('BioPythonUtils.sublime-settings').get('email_for_eutils')
+        email_for_eutils = sublime.load_settings(
+            'BioPythonUtils.sublime-settings').get('email_for_eutils')
 
         if email_for_eutils:
             Entrez.email = email_for_eutils
@@ -102,7 +104,8 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
                         "Error retrieving sequence ids using id '" + taxid + "'")
 
                 if len(links[0]["LinkSetDb"]) == 0:
-                    sublime.error_message("No sequences retrieved with id " + taxid)
+                    sublime.error_message(
+                        "No sequences retrieved with id " + taxid)
                     return
 
                 for link in links[0]["LinkSetDb"][0]["Link"]:
@@ -114,7 +117,7 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
                     except (IOError) as exception:
                         print(str(exception))
                         sublime.error_message("Error retrieving sequence using id '" +
-                                              link['Id'] + "'")
+                                              link['Id'] + "':" + str(exception))
 
                     seq_txt = seq_txt + handle.read()
 
@@ -171,7 +174,7 @@ class TranslateCommand(sublime_plugin.TextCommand):
             # If selection is not Fasta
             else:
                 seqout = []
-                # Could be more than one sequence, "MULTILINE" required 
+                # Could be more than one sequence, "MULTILINE" required
                 for nt_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
 
                     # Remove non-alphabetic ...
@@ -195,12 +198,13 @@ class TranslateCommand(sublime_plugin.TextCommand):
 
                         seqout.append(str(aa_seq))
                     else:
-                        sublime.error_message("Invalid characters in sequence " 
-                                + str(seq_num) + ": " + ''.join(invalid_chars))
+                        sublime.error_message("Invalid characters in sequence "
+                                              + str(seq_num) + ": " + ''.join(invalid_chars))
                         return
 
                 # Separate the translations with an empty line
-                self.view.window().new_file().insert(edit, 0, "\n\n".join(seqout) )
+                self.view.window().new_file().insert(
+                    edit, 0, "\n\n".join(seqout))
 
 
 # "Genbank To Fasta"
@@ -227,17 +231,17 @@ class GenbankToFastaCommand(sublime_plugin.TextCommand):
                 seqout = io.StringIO()
 
                 with io.StringIO(seq_str) as seqin:
-                        SeqIO.convert(seqin, 'genbank', seqout, 'fasta')
+                    SeqIO.convert(seqin, 'genbank', seqout, 'fasta')
                 seqin.close()
 
                 # Write the fasta string to a new window at position 0
                 self.view.window().new_file().insert(
-                        edit, 0, seqout.getvalue())
+                    edit, 0, seqout.getvalue())
             else:
                 sublime.error_message(
-                "Selected text does not look like Genbank: no 'LOCUS'")
+                    "Selected text does not look like Genbank: no 'LOCUS'")
                 return
-            
+
 
 # "Remote Blast"
 class RemoteBlastCommand(sublime_plugin.TextCommand):
@@ -249,15 +253,18 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
     def run(self, edit):
 
         global blast_app, blast_db, blast_format
-        
+
         if blast_app is None:
-            blast_app = sublime.load_settings('BioPythonUtils.sublime-settings').get('remote_blast_app')
- 
+            blast_app = sublime.load_settings(
+                'BioPythonUtils.sublime-settings').get('remote_blast_app')
+
         if blast_db is None:
-            blast_db = sublime.load_settings('BioPythonUtils.sublime-settings').get('remote_blast_db')
+            blast_db = sublime.load_settings(
+                'BioPythonUtils.sublime-settings').get('remote_blast_db')
 
         if blast_format is None:
-            blast_format = sublime.load_settings('BioPythonUtils.sublime-settings').get('remote_blast_format')
+            blast_format = sublime.load_settings(
+                'BioPythonUtils.sublime-settings').get('remote_blast_format')
 
         if not blast_db:
             sublime.error_message("No BLAST database specified")
@@ -287,7 +294,8 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                         result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
                                                 format_type=blast_format)
                         # Write the fasta string to a new window at position 0
-                        self.view.window().new_file().insert(edit, 0, result.read())
+                        self.view.window().new_file().insert(
+                            edit, 0, result.read())
 
                     seqin.close()
             else:
@@ -301,7 +309,8 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                     result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
                                             format_type=blast_format)
                     # Write the fasta string to a new window at position 0
-                    self.view.window().new_file().insert(edit, 0, result.read())
+                    self.view.window().new_file().insert(
+                        edit, 0, result.read())
 
 
 class SelectBlastDatabase(sublime_plugin.WindowCommand):
@@ -315,7 +324,8 @@ class SelectBlastApplication(sublime_plugin.WindowCommand):
 
     def run(self):
         cmd = RemoteBlastCommand
-        sublime.active_window().show_quick_panel(cmd.blast_apps, setApplication)
+        sublime.active_window().show_quick_panel(
+            cmd.blast_apps, setApplication)
 
 
 class SelectBlastFormat(sublime_plugin.WindowCommand):
@@ -355,12 +365,12 @@ def validate_nt(seq):
                       IUPAC.unambiguous_rna.letters)
 
     seq_arr = list(seq.upper())
-    invalid = list(set(seq_arr) - valid_bases)     
+    invalid = list(set(seq_arr) - valid_bases)
     return invalid
 
 
 def validate_aa(seq):
 
     seq_arr = list(seq.upper())
-    invalid = list(set(seq_arr) - set(IUPAC.protein.letters))     
+    invalid = list(set(seq_arr) - set(IUPAC.protein.letters))
     return invalid
