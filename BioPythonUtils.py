@@ -2,6 +2,7 @@ import io
 import re
 import sublime
 import sublime_plugin
+import Bio
 from Bio import SeqIO, Entrez
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
