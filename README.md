@@ -13,13 +13,13 @@ BioPythonUtils
 
 If you don't have Package Control see https://sublime.wbond.net.
 
-### Configure with the [BioPython](http://biopython.org) location, email, or [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) defaults
+### Configure with the [BioPython](http://biopython.org) location, email, and [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) defaults
 
 * Sublime Text comes with its own embedded Python 3 interpreter
 * This interpreter needs to know where [BioPython](http://biopython.org) is installed so ...
-* Enter the name of the directory containing BioPython:
-* Preferences -> Packages Setting -> BioPythonUtils -> Settings - User  
-* Add the "package directory", for example:
+* Enter the name of the package directory containing BioPython
+* In Preferences -> Packages Setting -> BioPythonUtils -> Settings - User  
+* For example:
 ~~~~
 {
     "package_directory": "/usr/local/lib/python3.4/site-packages",
@@ -29,6 +29,8 @@ If you don't have Package Control see https://sublime.wbond.net.
     "remote_blast_format": "Text"
 }
 ~~~~
+
+`email_for_eutils` is required for the Download commands, it's an NCBI requirement.
 
 ### Commands
 
