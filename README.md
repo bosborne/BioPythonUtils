@@ -17,8 +17,7 @@ If you don't have Package Control see https://sublime.wbond.net.
 
 * Sublime Text comes with its own embedded Python 3 interpreter
 * This interpreter needs to know where [BioPython](http://biopython.org) is installed so ...
-* Enter the name of the package directory containing BioPython
-* In Preferences -> Packages Setting -> BioPythonUtils -> Settings - User  
+* Enter the name of the package directory containing BioPython in Preferences -> Packages Setting -> BioPythonUtils -> Settings - User  
 * For example:
 ~~~~
 {
