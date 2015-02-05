@@ -29,7 +29,7 @@ If you don't have Package Control see https://sublime.wbond.net.
 }
 ~~~~
 
-`email_for_eutils` is required for the Download commands, it's an NCBI requirement.
+`email_for_eutils` is required for the Download commands by NCBI.
 
 ### Commands
 
