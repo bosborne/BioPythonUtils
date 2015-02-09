@@ -2,6 +2,8 @@ import io
 import re
 import sublime
 import sublime_plugin
+import threading
+import time
 import Bio
 from Bio import SeqIO, Entrez
 from Bio.Seq import Seq
@@ -14,17 +16,26 @@ blast_app = None
 blast_db = None
 blast_format = None
 
+
 # "Download Sequence"
 class DownloadSequenceCommand(sublime_plugin.TextCommand):
+
+    # The underscore is used to distinguish the method name from 
+    # the variable name, this is necessary to prevent recursion
+    _sequences = ''
+
+    def sequences(self):
+        return self._sequences
+
+    def add_to_sequences(self, seq):
+        self._sequences = self._sequences + seq
 
     def run(self, edit):
 
         email_for_eutils = sublime.load_settings(
             'BioPythonUtils.sublime-settings').get('email_for_eutils')
 
-        if email_for_eutils:
-            Entrez.email = email_for_eutils
-        else:
+        if not email_for_eutils:
             sublime.error_message(
                 "Enter email address for EUtils in BioPythonUtils -> Settings - User")
             return
@@ -39,23 +50,65 @@ class DownloadSequenceCommand(sublime_plugin.TextCommand):
                 continue
 
             ids = re.split('[\n\s,]+', id_str)
-            seq_txt = ''
+            threads = []
+            results = ''
 
+            # Start jobs
             for id in ids:
-                try:
-                    handle = Entrez.efetch(db="nucleotide",
-                                           id=id,
-                                           rettype="gb",
-                                           retmode="text")
-                except (IOError) as exception:
-                    print(str(exception))
-                    sublime.error_message(
-                        "Error retrieving sequence using id '" + id + "'")
+                thread = EutilsCall(id=id, email=email_for_eutils)
+                # time.sleep(1)
+                thread.start()
+                threads.append(thread)
 
-                seq_txt = seq_txt + handle.read()
+            results = handle_threads(threads)
+            self.view.window().new_file().insert(edit, 0, results )
 
-            # Write the fasta string to a new window at position 0
-            self.view.window().new_file().insert(edit, 0, seq_txt)
+
+def handle_threads(threads, results=''):
+    next_threads = []
+
+    for thread in threads:
+        if thread.is_alive():
+            next_threads.append(thread)
+            # Required, or else this loop runs so many times that
+            # the code exits, too much "recursion"
+            time.sleep(.01)
+        elif thread.result != False:
+            print("Downloaded " + thread.id)
+            results = results + str(thread.result)
+
+    if len(next_threads) > 0:
+        # Since this is recursive the "return" is required!
+        return handle_threads(next_threads, results)
+        # sublime.set_timeout(lambda: self.handle_threads(next_threads), 100)
+    elif len(next_threads) == 0:
+        return results
+
+
+class EutilsCall(threading.Thread):
+    # Subclass so that the results can be accessed through the instance variable
+    def __init__(self, id=None, result=None, email=None):
+        self.id = id
+        self.email = email
+        self.result = result
+        threading.Thread.__init__(self)
+
+    def run(self):
+        try:
+            handle = Entrez.efetch(db="nucleotide",
+                                   id=self.id,
+                                   email=self.email,
+                                   rettype="gb",
+                                   retmode="text")
+            self.result = handle.read()
+            return
+
+        except (IOError) as exception:
+            print(str(exception))
+            sublime.error_message(
+                "Error retrieving sequence using id '" + self.id + "'")
+
+        self.result = False
 
 
 # "Download Taxon"
@@ -86,7 +139,7 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
             seq_txt = ''
 
             for taxid in taxids:
-                # Check for numeric ids
+                # Check that they're numeric
                 nummatch = re.match(r'^\d+$', taxid)
 
                 if not nummatch:
