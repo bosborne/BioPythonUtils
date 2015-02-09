@@ -94,4 +94,4 @@ Sends the selected Fasta format or "plain" sequence(s) to the [BLAST server at N
 
 ### Issues
 
-The interaction between the plugin and various services at NCBI are  synchronized, so Sublime Text is essentially unusable while the queries ("Download ...", Remote BLAST) are running. Not suitable for large-scale work, need to fix this.
+The latest version of the code uses separate threads to download. My hope was that this approach would prevent the UI from freezing when large numbers of sequences were being retrieved, but this is not the case, this plugin is still not suitable for downoading hundreds of sequences. Next attempt will be creating separate processes.
