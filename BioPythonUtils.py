@@ -56,7 +56,7 @@ class DownloadSequenceCommand(sublime_plugin.TextCommand):
             # Start jobs
             for id in ids:
                 thread = EutilsCall(id=id, email=email_for_eutils)
-                # time.sleep(1)
+                # AY818147time.sleep(1)
                 thread.start()
                 threads.append(thread)
 
@@ -228,6 +228,7 @@ class TranslateCommand(sublime_plugin.TextCommand):
             # If selection is not Fasta
             else:
                 seqout = []
+                seq_num = 1
                 # Could be more than one sequence, "MULTILINE" required
                 for nt_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
 
@@ -251,6 +252,7 @@ class TranslateCommand(sublime_plugin.TextCommand):
                             sublime.error_message(str(exception))
 
                         seqout.append(str(aa_seq))
+                        seq_num += 1
                     else:
                         sublime.error_message("Invalid characters in sequence "
                                               + str(seq_num) + ": " + ''.join(invalid_chars))
@@ -354,11 +356,11 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                     seqin.close()
             else:
                 # Assume it's just sequence but there could be > 1 sequence,
-                # and just give the sequence an incrementing number as an id
+                # so just give the sequence an incrementing number as an id
                 seq_id = 1
                 for seq_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
-                    simple_seq = Seq(seq_str.strip())
-                    seq_record = SeqRecord(simple_seq, id=str(seq_id))
+                    seq_str = re.sub("[^a-zA-Z]","", seq_str)
+                    seq_record = SeqRecord(Seq(seq_str), id=str(seq_id))
                     seq_id += 1
                     result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
                                             format_type=blast_format)
