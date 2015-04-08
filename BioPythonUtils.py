@@ -349,22 +349,21 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                     for seq_record in SeqIO.parse(seqin, "fasta"):
                         result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
                                                 format_type=blast_format)
-                        # Write the fasta string to a new window at position 0
+                        # Write the result to a new window at position 0
                         self.view.window().new_file().insert(
                             edit, 0, result.read())
 
                     seqin.close()
             else:
-                # Assume it's just sequence but there could be > 1 sequence,
-                # so just give the sequence an incrementing number as an id
+                # Assume it's plain sequence and use incrementing number as an id
                 seq_id = 1
                 for seq_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
                     seq_str = re.sub("[^a-zA-Z]","", seq_str)
                     seq_record = SeqRecord(Seq(seq_str), id=str(seq_id))
-                    seq_id += 1
                     result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
                                             format_type=blast_format)
-                    # Write the fasta string to a new window at position 0
+                    seq_id += 1
+                    # Write the result to a new window at position 0
                     self.view.window().new_file().insert(
                         edit, 0, result.read())
 
