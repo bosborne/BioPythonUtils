@@ -20,8 +20,7 @@ blast_format = None
 # "Download Sequence"
 class DownloadSequenceCommand(sublime_plugin.TextCommand):
 
-    # The underscore is used to distinguish the method name from 
-    # the variable name, this is necessary to prevent recursion
+    # Use underscore to distinguish method name from variable name
     _sequences = ''
 
     def sequences(self):
