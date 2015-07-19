@@ -339,6 +339,7 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
             sublime.error_message("No BLAST format specified")
             return
 
+        # 1 page is written for each report if there are multiple selections
         for region in self.view.sel():
             seq_str = self.view.substr(region)
 
