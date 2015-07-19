@@ -3,26 +3,14 @@ BioPythonUtils
 
 [BioPython](http://biopython.org) Utilities for [Sublime Text 3](http://www.sublimetext.com/3)
 
-### Install [BioPython](http://biopython.org) for Python 3
-
-* Do "easy_install -f http://biopython.org/DIST/ biopython"
-* Or do "pip3 install biopython"
-* Or see http://biopython.org/wiki/Download
-
 ### Install BioPythonUtils using [Package Control](https://sublime.wbond.net)
 
 If you don't have Package Control see https://sublime.wbond.net.
 
-### Configure with the [BioPython](http://biopython.org) location, email, or [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) defaults
+### Configure with your email address, and [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) defaults
 
-* Sublime Text comes with its own embedded Python 3 interpreter
-* This interpreter needs to know where [BioPython](http://biopython.org) is installed so ...
-* Enter the name of the directory containing BioPython:
-* Preferences -> Packages Setting -> BioPythonUtils -> Settings - User  
-* Add the "package directory", for example:
 ~~~~
 {
-    "package_directory": "/usr/local/lib/python3.4/site-packages",
     "email_for_eutils": "bio@bioteam.net",
     "remote_blast_app": "blastp",
     "remote_blast_db": "nr",
@@ -30,7 +18,9 @@ If you don't have Package Control see https://sublime.wbond.net.
 }
 ~~~~
 
-Add an email address to your "Settings - User" file ("email_for_eutils") if you want to download from [NCBI](http://www.ncbi.nlm.nih.gov) using [EUtils](http://www.ncbi.nlm.nih.gov/books/NBK25500).
+The email address is required if you want to download from [NCBI](http://www.ncbi.nlm.nih.gov) using [EUtils](http://www.ncbi.nlm.nih.gov/books/NBK25500).
+
+BioPython 1.65 is bundled with this package, minus the Tests and documentation, you do not need to install it.
 
 ### Commands
 

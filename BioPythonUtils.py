@@ -4,7 +4,10 @@ import sublime
 import sublime_plugin
 import threading
 import time
-import Bio
+import sys
+import os
+# BioPython 1.65 is bundled with this package
+sys.path.append(os.path.dirname(__file__))
 from Bio import SeqIO, Entrez
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -414,7 +417,7 @@ def setApplication(index):
 
 
 def validate_nt(seq):
-    # {'G', 'T', 'U', 'C', 'A'}
+    # Valid: {'G', 'T', 'U', 'C', 'A'}
     valid_bases = set(IUPAC.unambiguous_dna.letters +
                       IUPAC.unambiguous_rna.letters)
 
