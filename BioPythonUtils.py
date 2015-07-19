@@ -350,20 +350,28 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                 # Read from a string and write to a string
                 seqout = io.StringIO()
 
+                # FIX! the error from NCBI is not getting displayed by Sublime
                 with io.StringIO(seq_str) as seqin:
                     for seq_record in SeqIO.parse(seqin, "fasta"):
-                        result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
-                                                format_type=blast_format)
-                        # Write the result to a new window at position 0
-                        self.view.window().new_file().insert(
-                            edit, 0, result.read())
+                        try:
+                            result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
+                                                    format_type=blast_format)
+                            # Write the result to a new window at position 0
+                            return
+                        except (IOError) as exception:
+                            print(str(exception))
+                            sublime.error_message(str(exception))
 
-                    seqin.close()
+                    self.view.window().new_file().insert(
+                                edit, 0, result.read())
+                    print("BLAST result from Fasta format for " + seq_record.id)
+
+                seqin.close()
             else:
                 # Assume it's plain sequence and use incrementing number as an id
                 seq_id = 1
                 for seq_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
-                    seq_str = re.sub("[^a-zA-Z]","", seq_str)
+                    seq_str = re.sub("[^a-zA-Z]", "", seq_str)
                     seq_record = SeqRecord(Seq(seq_str), id=str(seq_id))
                     result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
                                             format_type=blast_format)
@@ -371,7 +379,7 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                     # Write the result to a new window at position 0
                     self.view.window().new_file().insert(
                         edit, 0, result.read())
-
+                    print("BLAST result from plain format for " + seq_record.id)
 
 class SelectBlastDatabase(sublime_plugin.WindowCommand):
 

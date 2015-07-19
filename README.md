@@ -69,7 +69,7 @@ or:
 
 #### "Download Taxon" 
 
-Downloads nucleotide sequence from [NCBI](http://www.ncbi.nlm.nih.gov) using the selected [NCBI Taxonomy](http://www.ncbi.nlm.nih.gov/taxonomy) ids. Ids can be delimited by commas, returns, or space.
+Downloads a taxon as GenBank entries from [NCBI](http://www.ncbi.nlm.nih.gov) using the selected [NCBI Taxonomy](http://www.ncbi.nlm.nih.gov/taxonomy) ids. Ids can be delimited by commas, returns, or space.
 
 #### "Remote BLAST"
 
@@ -77,7 +77,7 @@ Sends the selected Fasta format or "plain" sequence(s) to the [BLAST server at N
 
 #### "Genbank To Fasta"
 
-Converts the selection, 1 or more Genbank entries, to Fasta format.
+Converts the selection, 1 or more GenBank entries, to Fasta format.
 
 ### Issues
 
