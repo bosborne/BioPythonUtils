@@ -356,15 +356,15 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                         try:
                             result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
                                                     format_type=blast_format)
-                            # Write the result to a new window at position 0
                             return
                         except (IOError) as exception:
                             print(str(exception))
                             sublime.error_message(str(exception))
 
-                    self.view.window().new_file().insert(
+                        # Write the result to a new window at position 0
+                        self.view.window().new_file().insert(
                                 edit, 0, result.read())
-                    print("BLAST result from Fasta format for " + seq_record.id)
+                        print("BLAST result from Fasta format for " + seq_record.id)
 
                 seqin.close()
             else:
