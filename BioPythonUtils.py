@@ -72,7 +72,7 @@ def handle_threads(threads, results=''):
     for thread in threads:
         if thread.is_alive():
             next_threads.append(thread)
-            # Required, or else this loop runs so many times that
+            # Required, or else this loop runs so quickly that
             # the code exits, too much "recursion"
             time.sleep(.01)
         elif thread.result != False:
@@ -243,9 +243,10 @@ class TranslateCommand(sublime_plugin.TextCommand):
                         return
 
                     nt_seq = Seq(nt_str, IUPAC.unambiguous_dna)
-                    # Check that it's all valid nucleotide
+                    # Check that it's all valid nucleotide ...
                     invalid_chars = validate_nt(str(nt_seq))
 
+                    # ... and if it is
                     if len(invalid_chars) == 0:
                         try:
                             aa_seq = nt_seq.translate()
@@ -312,6 +313,7 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
 
         global blast_app, blast_db, blast_format
 
+        # FIX
         if blast_app is None:
             blast_app = sublime.load_settings(
                 'BioPythonUtils.sublime-settings').get('remote_blast_app')
@@ -324,6 +326,7 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
             blast_format = sublime.load_settings(
                 'BioPythonUtils.sublime-settings').get('remote_blast_format')
 
+        # FIX
         if not blast_db:
             sublime.error_message("No BLAST database specified")
             return
