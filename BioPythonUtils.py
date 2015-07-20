@@ -14,7 +14,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
 from Bio.Blast import NCBIWWW
 
-# Used by "Remote BLAST"
+# FIX Used by "Remote BLAST"
 blast_app = None
 blast_db = None
 blast_format = None
