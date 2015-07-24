@@ -14,23 +14,17 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
 from Bio.Blast import NCBIWWW
 
-# FIX Used by "Remote BLAST"
-blast_app = None
-blast_db = None
-blast_format = None
+# Use globals which can be set by show_quick_panel()
+blast_db=None
+blast_app=None
+blast_format=None
+blast_apps = ['blastp', 'blastn', 'blastx', 'tblastn', 'tblastx']
+blast_formats = ['HTML', 'Text', 'ASN.1', 'XML']
+blast_dbs = ['nr', 'refseq', 'swissprot', 'pat', 'month', 'pdb', 'env_nr']
 
 
 # "Download Sequence"
 class DownloadSequenceCommand(sublime_plugin.TextCommand):
-
-    # Use underscore to distinguish method name from variable name
-    _sequences = ''
-
-    def sequences(self):
-        return self._sequences
-
-    def add_to_sequences(self, seq):
-        self._sequences = self._sequences + seq
 
     def run(self, edit):
 
@@ -246,7 +240,7 @@ class TranslateCommand(sublime_plugin.TextCommand):
                     # Check that it's all valid nucleotide ...
                     invalid_chars = validate_nt(str(nt_seq))
 
-                    # ... and if it is
+                    # ... and if it is valid
                     if len(invalid_chars) == 0:
                         try:
                             aa_seq = nt_seq.translate()
@@ -305,28 +299,32 @@ class GenbankToFastaCommand(sublime_plugin.TextCommand):
 # "Remote Blast"
 class RemoteBlastCommand(sublime_plugin.TextCommand):
 
-    blast_apps = ['blastp', 'blastn', 'blastx', 'tblastn', 'tblastx']
-    blast_dbs = ['nr', 'refseq', 'swissprot', 'pat', 'month', 'pdb', 'env_nr']
-    blast_formats = ['HTML', 'Text', 'ASN.1', 'XML']
+    # FIX! errors from NCBI are not getting displayed by Sublime
+    def do_blast(self, blast_app, blast_db, seq_record, blast_format):
+        try:
+            result = NCBIWWW.qblast(blast_app, blast_db, 
+                     seq_record.format('fasta'), format_type=blast_format)
+        except (IOError) as exception:
+            print(str(exception))
+            sublime.error_message(str(exception))
+
+        return result
 
     def run(self, edit):
+        global blast_db,blast_app,blast_format
 
-        global blast_app, blast_db, blast_format
-
-        # FIX
-        if blast_app is None:
+        if not blast_app:
             blast_app = sublime.load_settings(
                 'BioPythonUtils.sublime-settings').get('remote_blast_app')
-
-        if blast_db is None:
+        
+        if not blast_db:
             blast_db = sublime.load_settings(
                 'BioPythonUtils.sublime-settings').get('remote_blast_db')
 
-        if blast_format is None:
+        if not blast_format:
             blast_format = sublime.load_settings(
                 'BioPythonUtils.sublime-settings').get('remote_blast_format')
 
-        # FIX
         if not blast_db:
             sublime.error_message("No BLAST database specified")
             return
@@ -342,7 +340,6 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
         # 1 page is written for each report if there are multiple selections
         for region in self.view.sel():
             seq_str = self.view.substr(region)
-
             # Fasta header pattern
             patt = re.compile('^>\s*\S+')
 
@@ -351,81 +348,63 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                 # Read from a string and write to a string
                 seqout = io.StringIO()
 
-                # FIX! the error from NCBI is not getting displayed by Sublime
                 with io.StringIO(seq_str) as seqin:
                     for seq_record in SeqIO.parse(seqin, "fasta"):
-                        try:
-                            result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
-                                                    format_type=blast_format)
-                            return
-                        except (IOError) as exception:
-                            print(str(exception))
-                            sublime.error_message(str(exception))
-
+                        result = self.do_blast(blast_app, blast_db, seq_record, blast_format)
                         # Write the result to a new window at position 0
                         self.view.window().new_file().insert(
                                 edit, 0, result.read())
-                        print("BLAST result from Fasta format for " + seq_record.id)
+                        print("Wrote BLAST result from Fasta format for " + seq_record.id)
 
                 seqin.close()
             else:
-                # Assume it's plain sequence and use incrementing number as an id
+                # Assume it's plain sequence and use an incrementing number as an id
                 seq_id = 1
                 for seq_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
                     seq_str = re.sub("[^a-zA-Z]", "", seq_str)
                     seq_record = SeqRecord(Seq(seq_str), id=str(seq_id))
-                    result = NCBIWWW.qblast(blast_app, blast_db, seq_record.format('fasta'),
-                                            format_type=blast_format)
+                    result = self.do_blast(blast_app, blast_db, seq_record, blast_format)
                     seq_id += 1
                     # Write the result to a new window at position 0
                     self.view.window().new_file().insert(
                         edit, 0, result.read())
-                    print("BLAST result from plain format for " + seq_record.id)
+                    print("Wrote BLAST result from plain format for " + seq_record.id)
+
 
 class SelectBlastDatabase(sublime_plugin.WindowCommand):
-
     def run(self):
-        cmd = RemoteBlastCommand
-        sublime.active_window().show_quick_panel(cmd.blast_dbs, setDatabase)
+        global blast_dbs
+        sublime.active_window().show_quick_panel(blast_dbs, setBlastDatabase)
 
 
 class SelectBlastApplication(sublime_plugin.WindowCommand):
-
     def run(self):
-        cmd = RemoteBlastCommand
-        sublime.active_window().show_quick_panel(
-            cmd.blast_apps, setApplication)
+        global blast_apps
+        sublime.active_window().show_quick_panel(blast_apps, setBlastApplication)
 
 
 class SelectBlastFormat(sublime_plugin.WindowCommand):
-
     def run(self):
-        cmd = RemoteBlastCommand
-        sublime.active_window().show_quick_panel(cmd.blast_formats, setFormat)
+        global blast_formats
+        sublime.active_window().show_quick_panel(blast_formats, setBlastFormat)
 
 
-def setFormat(index):
-    global blast_format
-    cmd = RemoteBlastCommand
-
+def setBlastFormat(index):
+    global blast_format,blast_formats
     if index > -1:
-        blast_format = cmd.blast_formats[index]
+        blast_format = blast_formats[index]
 
 
-def setDatabase(index):
-    global blast_db
-    cmd = RemoteBlastCommand
-
+def setBlastDatabase(index):
+    global blast_db,blast_dbs
     if index > -1:
-        blast_db = cmd.blast_dbs[index]
+        blast_db = blast_dbs[index]
 
 
-def setApplication(index):
-    global blast_app
-    cmd = RemoteBlastCommand
-
+def setBlastApplication(index):
+    global blast_app,blast_apps
     if index > -1:
-        blast_app = cmd.blast_apps[index]
+        blast_app = blast_apps[index]
 
 
 def validate_nt(seq):
@@ -439,7 +418,6 @@ def validate_nt(seq):
 
 
 def validate_aa(seq):
-
     seq_arr = list(seq.upper())
     invalid = list(set(seq_arr) - set(IUPAC.protein.letters))
     return invalid
