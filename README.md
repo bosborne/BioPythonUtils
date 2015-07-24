@@ -20,7 +20,7 @@ If you don't have Package Control see https://sublime.wbond.net.
 
 The email address is required if you want to download from [NCBI](http://www.ncbi.nlm.nih.gov) using [EUtils](http://www.ncbi.nlm.nih.gov/books/NBK25500).
 
-BioPython 1.65 is bundled with this package, minus the Tests and documentation, you do not need to install it.
+[BioPython](http://biopython.org) 1.65 is bundled with this package, minus the Tests and documentation, you do not need to install it.
 
 ### Commands
 
