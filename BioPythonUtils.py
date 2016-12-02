@@ -148,7 +148,6 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
                     links = Entrez.read(
                         Entrez.elink(dbfrom="taxonomy",
                                      db="nucleotide",
-                                     email=self.email,
                                      id=taxid))
                 except (IOError) as exception:
                     print(str(exception))
@@ -164,7 +163,6 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
                     try:
                         handle = Entrez.efetch(db="nucleotide",
                                                id=link['Id'],
-                                               email=self.email,
                                                rettype="gb",
                                                retmode="text")
                     except (IOError) as exception:
