@@ -30,7 +30,6 @@ from Bio._py3k import StringIO
 
 from Bio.KEGG.KGML.KGML_pathway import *
 
-__docformat__ = "restructuredtext en"
 
 def read(handle, debug=0):
     """Parses a single KEGG Pathway from given file handle.
@@ -157,8 +156,8 @@ class KGMLParser(object):
                 # This should warn us of any unimplemented tags
                 import warnings
                 from Bio import BiopythonParserWarning
-                warnings.warn("Warning: tag %s not implemented in parser" % element.tag,
-                              BiopythonParserWarning)
+                warnings.warn("Warning: tag %s not implemented in parser" %
+                              element.tag, BiopythonParserWarning)
         return self.pathway
 
 

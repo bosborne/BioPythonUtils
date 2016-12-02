@@ -1,6 +1,6 @@
 # Copyright 2000-2004 Brad Chapman.
 # Copyright 2001 Iddo Friedberg.
-# Copyright 2007-2010 by Peter Cock.
+# Copyright 2007-2016 by Peter Cock.
 # All rights reserved.
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
@@ -12,9 +12,6 @@ specific to a particular program or format.
 """
 from __future__ import print_function
 
-__docformat__ = "restructuredtext en"  # Don't just use plain text in epydoc API pages!
-
-# biopython
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import Alphabet
@@ -40,6 +37,7 @@ class Alignment(object):
         e.g.
 
         >>> from Bio.Alphabet import IUPAC, Gapped
+        >>> from Bio.Align.Generic import Alignment
         >>> align = Alignment(Gapped(IUPAC.unambiguous_dna, "-"))
         >>> align.add_sequence("Alpha", "ACTGCTAGCTAG")
         >>> align.add_sequence("Beta",  "ACT-CTAGCTAG")
@@ -52,9 +50,12 @@ class Alignment(object):
         """
         import warnings
         import Bio
-        warnings.warn("With the introduction of the MultipleSeqAlignment class in Bio.Align, this base class is deprecated and is likely to be removed in a future release of Biopython.", Bio.BiopythonDeprecationWarning)
-        if not (isinstance(alphabet, Alphabet.Alphabet)
-        or isinstance(alphabet, Alphabet.AlphabetEncoder)):
+        warnings.warn("With the introduction of the MultipleSeqAlignment "
+                      "class in Bio.Align, this base class is deprecated "
+                      "and is likely to be removed in a future release of "
+                      "Biopython.", Bio.BiopythonDeprecationWarning)
+        if not (isinstance(alphabet, Alphabet.Alphabet) or
+                isinstance(alphabet, Alphabet.AlphabetEncoder)):
             raise ValueError("Invalid alphabet argument")
         self._alphabet = alphabet
         # hold everything at a list of SeqRecord objects
@@ -70,13 +71,13 @@ class Alignment(object):
                 return "%s %s" % (record.seq, record.id)
             else:
                 return "%s...%s %s" \
-                       % (record.seq[:length-3], record.seq[-3:], record.id)
+                       % (record.seq[:length - 3], record.seq[-3:], record.id)
         else:
             if len(record.seq) <= length:
                 return "%s %s" % (record.seq, record.id)
             else:
                 return "%s...%s %s" \
-                       % (record.seq[:length-6], record.seq[-3:], record.id)
+                       % (record.seq[:length - 6], record.seq[-3:], record.id)
 
     def __str__(self):
         """Returns a multi-line string summary of the alignment.
@@ -87,6 +88,7 @@ class Alignment(object):
         single screen. e.g.
 
         >>> from Bio.Alphabet import IUPAC, Gapped
+        >>> from Bio.Align.Generic import Alignment
         >>> align = Alignment(Gapped(IUPAC.unambiguous_dna, "-"))
         >>> align.add_sequence("Alpha", "ACTGCTAGCTAG")
         >>> align.add_sequence("Beta",  "ACT-CTAGCTAG")
@@ -144,6 +146,7 @@ class Alignment(object):
         e.g.
 
         >>> from Bio.Alphabet import IUPAC, Gapped
+        >>> from Bio.Align.Generic import Alignment
         >>> align = Alignment(Gapped(IUPAC.unambiguous_dna, "-"))
         >>> align.add_sequence("Alpha", "ACTGCTAGCTAG")
         >>> align.add_sequence("Beta",  "ACT-CTAGCTAG")
@@ -210,6 +213,7 @@ class Alignment(object):
         e.g.
 
         >>> from Bio.Alphabet import IUPAC, Gapped
+        >>> from Bio.Align.Generic import Alignment
         >>> align = Alignment(Gapped(IUPAC.unambiguous_dna, "-"))
         >>> align.add_sequence("Alpha", "ACTGCTAGCTAG")
         >>> align.add_sequence("Beta",  "ACT-CTAGCTAG")
@@ -241,7 +245,12 @@ class Alignment(object):
         """
         import warnings
         import Bio
-        warnings.warn("This is a legacy method and is likely to be removed in a future release of Biopython. In new code where you need to access the rows of the alignment (i.e. the sequences) consider iterating over them or accessing them as SeqRecord objects.", Bio.BiopythonDeprecationWarning)
+        warnings.warn("This is a legacy method and is likely to be removed "
+                      "in a future release of Biopython. In new code where "
+                      "you need to access the rows of the alignment (i.e. the "
+                      "sequences) consider iterating over them or accessing "
+                      "them as SeqRecord objects.",
+                      Bio.BiopythonDeprecationWarning)
         return self._records[number].seq
 
     def __len__(self):
@@ -264,6 +273,7 @@ class Alignment(object):
         by finding the maximum length of sequences in the alignment.
 
         >>> from Bio.Alphabet import IUPAC, Gapped
+        >>> from Bio.Align.Generic import Alignment
         >>> align = Alignment(Gapped(IUPAC.unambiguous_dna, "-"))
         >>> align.add_sequence("Alpha", "ACTGCTAGCTAG")
         >>> align.add_sequence("Beta",  "ACT-CTAGCTAG")
@@ -343,6 +353,7 @@ class Alignment(object):
         e.g.
 
         >>> from Bio.Alphabet import IUPAC, Gapped
+        >>> from Bio.Align.Generic import Alignment
         >>> align = Alignment(Gapped(IUPAC.unambiguous_dna, "-"))
         >>> align.add_sequence("Alpha", "ACTGCTAGCTAG")
         >>> align.add_sequence("Beta",  "ACT-CTAGCTAG")
@@ -365,6 +376,7 @@ class Alignment(object):
         We'll use the following example alignment here for illustration:
 
         >>> from Bio.Alphabet import IUPAC, Gapped
+        >>> from Bio.Align.Generic import Alignment
         >>> align = Alignment(Gapped(IUPAC.unambiguous_dna, "-"))
         >>> align.add_sequence("Alpha",  "ACTGCTAGCTAG")
         >>> align.add_sequence("Beta",   "ACT-CTAGCTAG")
@@ -428,19 +440,13 @@ class Alignment(object):
             sub_align = Alignment(self._alphabet)
             sub_align._records = self._records[index]
             return sub_align
-        elif len(index)==2:
+        elif len(index) == 2:
             raise TypeError("Row and Column indexing is not currently supported,"
-                            +"but may be in future.")
+                            "but may be in future.")
         else:
             raise TypeError("Invalid index type.")
 
 
-def _test():
-    """Run the Bio.Align.Generic module's doctests."""
-    print("Running doctests...")
-    import doctest
-    doctest.testmod()
-    print("Done")
-
 if __name__ == "__main__":
-    _test()
+    from Bio._utils import run_doctest
+    run_doctest()

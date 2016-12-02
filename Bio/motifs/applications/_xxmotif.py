@@ -85,7 +85,7 @@ class XXmotifCommandline(AbstractCommandline):
                    equate=False),
           _Option(["-g", "--gaps", "GAPS", "gaps"],
                    "maximum number of gaps used for start seeds [0-3] (DEFAULT: 0)",
-                   checker_function=lambda x: x in [0-3],
+                   checker_function=lambda x: x in [0 - 3],
                    equate=False),
           _Option(["--type", "TYPE", "type"],
                    "defines what kind of start seeds are used (DEFAULT: ALL)"
@@ -177,13 +177,6 @@ class XXmotifCommandline(AbstractCommandline):
         AbstractCommandline.__init__(self, cmd, **kwargs)
 
 
-def _test():
-    """Run the module's doctests (PRIVATE)."""
-    print("Running XXmotif doctests...")
-    import doctest
-    doctest.testmod()
-    print("Done")
-
-
 if __name__ == "__main__":
-    _test()
+    from Bio._utils import run_doctest
+    run_doctest()

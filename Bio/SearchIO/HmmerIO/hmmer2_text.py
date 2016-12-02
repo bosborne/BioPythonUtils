@@ -16,7 +16,6 @@ from ._base import _BaseHmmerTextIndexer
 
 __all__ = ['Hmmer2TextParser', 'Hmmer2TextIndexer']
 
-__docformat__ = "restructuredtext en"
 
 _HSP_ALIGN_LINE = re.compile(r'(\S+):\s+domain (\d+) of (\d+)')
 
@@ -244,7 +243,7 @@ class Hmmer2TextParser(object):
             if hit.domain_obs_num != num:
                 continue
 
-            frag = hit[idx-1][0]
+            frag = hit[idx - 1][0]
 
             hmmseq = ''
             consensus = ''
@@ -275,7 +274,7 @@ class Hmmer2TextParser(object):
                 line_len = len(seq)
                 if not self.read_next(rstrip=False):
                     break
-                consensus += self.line[19+pad:19+pad+line_len]
+                consensus += self.line[19 + pad:19 + pad + line_len]
                 # If there's no consensus sequence, hmmer2 doesn't
                 # bother to put spaces here, so add extra padding
                 extra_padding = len(hmmseq) - len(consensus)

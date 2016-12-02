@@ -16,8 +16,6 @@ from ._base import _BaseHmmerTextIndexer
 
 __all__ = ['Hmmer3TextParser', 'Hmmer3TextIndexer']
 
-__docformat__ = "restructuredtext en"
-
 
 # precompile regex patterns for faster processing
 # regex for program name capture
@@ -118,7 +116,7 @@ class Hmmer3TextParser(object):
             }
 
             # get description and accession, if they exist
-            qdesc = '<unknown description>' # placeholder
+            qdesc = '<unknown description>'  # placeholder
             while not self.line.startswith('Scores for '):
                 self.line = read_forward(self.handle)
 
@@ -146,6 +144,11 @@ class Hmmer3TextParser(object):
                 setattr(qresult, attr, value)
             yield qresult
             self.line = read_forward(self.handle)
+
+            # Skip line beginning with '# Alignment of', which are output
+            # when running phmmer with the '-A' flag.
+            if self.line.startswith('# Alignment of'):
+                self.line = self.handle.readline()
 
             # HMMER >= 3.1 outputs '[ok]' at the end of all results file,
             # which means we can break the main loop when we see the line
@@ -214,8 +217,8 @@ class Hmmer3TextParser(object):
     def _create_hits(self, hit_attrs, qid, qdesc):
         """Parses a HMMER3 hsp block, beginning with the hsp table."""
         # read through until the beginning of the hsp block
-        self._read_until(lambda line: line.startswith('Internal pipeline')
-                or line.startswith('>>'))
+        self._read_until(lambda line: line.startswith('Internal pipeline') or
+                         line.startswith('>>'))
 
         # start parsing the hsp block
         hit_list = []
@@ -226,6 +229,7 @@ class Hmmer3TextParser(object):
                 return hit_list
             assert self.line.startswith('>>')
             hid, hdesc = self.line[len('>> '):].split('  ', 1)
+            hdesc = hdesc.strip()
 
             # read through the hsp table header and move one more line
             self._read_until(lambda line:
@@ -247,6 +251,10 @@ class Hmmer3TextParser(object):
                     hit_attr = hit_attrs.pop(0)
                     hit = Hit(hsp_list)
                     for attr, value in hit_attr.items():
+                        if attr == "description":
+                            cur_val = getattr(hit, attr)
+                            if cur_val and value and cur_val.startswith(value):
+                                continue
                         setattr(hit, attr, value)
                     if not hit:
                         hit.query_description = qdesc
@@ -260,6 +268,11 @@ class Hmmer3TextParser(object):
                 # hmmfrom, hmmto, query_ends, hit_ends, alifrom, alito,
                 # envfrom, envto, acc_avg
                 frag = HSPFragment(hid, qid)
+                # set query and hit descriptions if they are defined / nonempty string
+                if qdesc:
+                    frag.query_description = qdesc
+                if hdesc:
+                    frag.hit_description = hdesc
                 # HMMER3 alphabets are always protein alphabets
                 frag.alphabet = generic_protein
                 # depending on whether the program is hmmsearch, hmmscan, or phmmer

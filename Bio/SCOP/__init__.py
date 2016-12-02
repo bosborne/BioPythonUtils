@@ -60,14 +60,13 @@ from . import Residues
 from Bio import SeqIO
 from Bio.Seq import Seq
 
-__docformat__ = "restructuredtext en"
 
 nodeCodeDict = {'cl': 'class', 'cf': 'fold', 'sf': 'superfamily',
                 'fa': 'family', 'dm': 'protein', 'sp': 'species', 'px': 'domain'}
 
 
-_nodetype_to_code= {'class': 'cl', 'fold': 'cf', 'superfamily': 'sf',
-                    'family': 'fa', 'protein': 'dm', 'species': 'sp', 'domain': 'px'}
+_nodetype_to_code = {'class': 'cl', 'fold': 'cf', 'superfamily': 'sf',
+                     'family': 'fa', 'protein': 'dm', 'species': 'sp', 'domain': 'px'}
 
 nodeCodeOrder = ['ro', 'cl', 'cf', 'sf', 'fa', 'dm', 'sp', 'px']
 
@@ -142,14 +141,14 @@ def parse_domain(str):
 
     m = _domain_re.match(str)
     if (not m):
-        raise ValueError("Domain: "+ str)
+        raise ValueError("Domain: " + str)
 
     dom = Domain()
     dom.sid = m.group(1)
     dom.sccs = m.group(2)
     dom.residues = Residues.Residues(m.group(3))
     if not dom.residues.pdbid:
-        dom.residues.pdbid= dom.sid[1:5]
+        dom.residues.pdbid = dom.sid[1:5]
     dom.description = m.group(4).strip()
 
     return dom
@@ -242,7 +241,7 @@ class Scop(object):
 
                     n = sunidDict[record.sunid]
 
-                    if record.parent != '': # Not root node
+                    if record.parent != '':  # Not root node
 
                         if record.parent not in sunidDict:
                             raise ValueError("Incomplete data?")
@@ -319,7 +318,7 @@ class Scop(object):
 
     def write_des(self, handle):
         """Build a DES SCOP parsable file from this object"""
-        # Origional SCOP file is not ordered?
+        # Original SCOP file is not ordered?
         for n in sorted(self._sunidDict.values(), key=lambda n: n.sunid):
             if n != self.root:
                 handle.write(str(n.toDesRecord()))
@@ -366,7 +365,7 @@ class Scop(object):
 
                 [n.sid, n.residues, pdbid] = cur.fetchone()
                 n.residues = Residues.Residues(n.residues)
-                n.residues.pdbid=pdbid
+                n.residues.pdbid = pdbid
                 self._sidDict[n.sid] = n
 
             [n.sunid, n.type, n.sccs, n.description] = data
@@ -385,7 +384,7 @@ class Scop(object):
             return None
 
         cur = self.db_handle.cursor()
-        cur.execute("SELECT "+type+" from cla WHERE "+node.type+"=%s", (node.sunid))
+        cur.execute("SELECT " + type + " from cla WHERE " + node.type + "=%s", (node.sunid))
         result = cur.fetchone()
         if result is not None:
             return self.getNodeBySunid(result[0])
@@ -413,13 +412,13 @@ class Scop(object):
 
         if type != 'px':
             cur.execute("SELECT DISTINCT des.sunid,des.type,des.sccs,description FROM \
-            cla,des WHERE cla."+node.type+"=%s AND cla."+type+"=des.sunid", (node.sunid))
+            cla,des WHERE cla." + node.type + "=%s AND cla." + type + "=des.sunid", (node.sunid))
             data = cur.fetchall()
             for d in data:
                 if int(d[0]) not in self._sunidDict:
                     n = Node(scop=self)
                     [n.sunid, n.type, n.sccs, n.description] = d
-                    n.sunid=int(n.sunid)
+                    n.sunid = int(n.sunid)
                     self._sunidDict[n.sunid] = n
 
                     cur.execute("SELECT parent FROM hie WHERE child=%s", n.sunid)
@@ -435,7 +434,7 @@ class Scop(object):
 
         else:
             cur.execute("SELECT cla.sunid,sid,pdbid,residues,cla.sccs,type,description,sp\
-             FROM cla,des where cla.sunid=des.sunid and cla."+node.type+"=%s",
+             FROM cla,des where cla.sunid=des.sunid and cla." + node.type + "=%s",
                         node.sunid)
 
             data = cur.fetchall()
@@ -574,7 +573,7 @@ class Node(object):
             return self.scop.getNodeBySunid(self.parent)
 
     def getDescendents(self, node_type):
-        """ Return a list of all decendent nodes of the given type. Node type can a
+        """ Return a list of all descendant nodes of the given type. Node type can a
         two letter code or longer description. e.g. 'fa' or 'family'
         """
         if node_type in _nodetype_to_code:
@@ -585,7 +584,7 @@ class Node(object):
             return self.scop.getDescendentsFromSQL(self, node_type)
         while nodes[0].type != node_type:
             if nodes[0].type == 'px':
-                return [] # Fell of the bottom of the hierarchy
+                return []  # Fell of the bottom of the hierarchy
             child_list = []
             for n in nodes:
                 for child in n.getChildren():
@@ -609,7 +608,7 @@ class Node(object):
 
             while n.type != node_type:
                 if n.type == 'ro':
-                    return None # Fell of the top of the hierarchy
+                    return None  # Fell of the top of the hierarchy
                 n = n.getParent()
 
             return n
@@ -632,7 +631,7 @@ class Domain(Node):
         s = []
         s.append(self.sid)
         s.append(self.sccs)
-        s.append("("+str(self.residues)+")")
+        s.append("(" + str(self.residues) + ")")
 
         if not self.getParent():
             s.append(self.description)
@@ -640,7 +639,7 @@ class Domain(Node):
             sp = self.getParent()
             dm = sp.getParent()
             s.append(dm.description)
-            s.append("{"+sp.description+"}")
+            s.append("{" + sp.description + "}")
 
         return " ".join(s)
 
@@ -698,8 +697,8 @@ class Astral(object):
         """
 
         if astral_file is None and dir_path is None and db_handle is None:
-            raise RuntimeError("Need either file handle, or (dir_path + "
-                       + "version) or database handle to construct Astral")
+            raise RuntimeError("Need either file handle, or (dir_path + version),"
+                               " or database handle to construct Astral")
         if not scop:
             raise RuntimeError("Must provide a Scop instance to construct")
 
@@ -746,7 +745,7 @@ class Astral(object):
         """get domains clustered by percent id"""
         if id not in self.IdDatasets:
             if self.db_handle:
-                self.IdDatasets[id] = self.getAstralDomainsFromSQL("id"+str(id))
+                self.IdDatasets[id] = self.getAstralDomainsFromSQL("id" + str(id))
             else:
                 if not self.path:
                     raise RuntimeError("No scopseq directory specified")
@@ -773,7 +772,7 @@ class Astral(object):
         if filename:
             file_handle.close()
 
-        doms = [a for a in doms if a[0]=='d']
+        doms = [a for a in doms if a[0] == 'd']
         doms = [self.scop.getDomainBySid(x) for x in doms]
         return doms
 
@@ -781,7 +780,7 @@ class Astral(object):
         """Load a set of astral domains from a column in the astral table of a MYSQL
         database (which can be created with writeToSQL(...)"""
         cur = self.db_handle.cursor()
-        cur.execute("SELECT sid FROM astral WHERE "+column+"=1")
+        cur.execute("SELECT sid FROM astral WHERE " + column + "=1")
         data = cur.fetchall()
         data = [self.scop.getDomainBySid(x[0]) for x in data]
 
@@ -836,17 +835,17 @@ class Astral(object):
                         (dom, self.fasta_dict[dom].seq.data))
 
         for i in astralBibIds:
-            cur.execute("ALTER TABLE astral ADD (id"+str(i)+" TINYINT)")
+            cur.execute("ALTER TABLE astral ADD (id" + str(i) + " TINYINT)")
 
             for d in self.domainsClusteredById(i):
-                cur.execute("UPDATE astral SET id"+str(i)+"=1  WHERE sid=%s",
+                cur.execute("UPDATE astral SET id" + str(i) + "=1  WHERE sid=%s",
                             d.sid)
 
         for ev in astralEvs:
-            cur.execute("ALTER TABLE astral ADD ("+astralEv_to_sql[ev]+" TINYINT)")
+            cur.execute("ALTER TABLE astral ADD (" + astralEv_to_sql[ev] + " TINYINT)")
 
             for d in self.domainsClusteredByEv(ev):
-                cur.execute("UPDATE astral SET "+astralEv_to_sql[ev]+"=1  WHERE sid=%s",
+                cur.execute("UPDATE astral SET " + astralEv_to_sql[ev] + "=1  WHERE sid=%s",
                             d.sid)
 
 
@@ -872,8 +871,8 @@ def search(pdb=None, key=None, sid=None, disp=None, dir=None, loc=None,
     return _open(cgi, variables)
 
 
-def _open(cgi, params={}, get=1):
-    """_open(cgi, params={}, get=1) -> UndoHandle
+def _open(cgi, params=None, get=1):
+    """Open a hnadle to SCOP, returns an UndoHandle
 
     Open a handle to SCOP.  cgi is the URL for the cgi script to access.
     params is a dictionary with the options to pass to it.  get is a boolean
@@ -884,6 +883,8 @@ def _open(cgi, params={}, get=1):
     from Bio._py3k import urlopen, urlencode
 
     # Open a handle to SCOP.
+    if params is None:
+        params = {}
     options = urlencode(params)
     if get:  # do a GET
         if options:

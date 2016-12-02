@@ -1,5 +1,5 @@
 # Copyright 2010 by Andrea Pierleoni
-# Revisions copyright 2010 by Peter Cock
+# Revisions copyright 2010, 2016 by Peter Cock
 # All rights reserved.
 #
 # This code is part of the Biopython distribution and governed by its
@@ -22,8 +22,6 @@ from Bio import SeqFeature
 from Bio import Alphabet
 from Bio.SeqRecord import SeqRecord
 from Bio._py3k import StringIO
-
-__docformat__ = "restructuredtext en"
 
 
 # For speed try to use cElementTree rather than ElementTree
@@ -273,7 +271,7 @@ class Parser(object):
                         else:
                             start = int(list(loc_element.getiterator(NS + 'begin'))[0].attrib['position']) - 1
                             end = int(list(loc_element.getiterator(NS + 'end'))[0].attrib['position'])
-                    except:  # undefined positions or erroneously mapped
+                    except ValueError:  # undefined positions or erroneously mapped
                         pass
                 mass = element.attrib['mass']
                 method = element.attrib['method']
@@ -361,8 +359,8 @@ class Parser(object):
                             for person_element in cit_element:
                                 authors.append(person_element.attrib['name'])
                         elif cit_element.tag == NS + 'dbReference':
-                            self.ParsedSeqRecord.dbxrefs.append(cit_element.attrib['type']
-                                                                + ':' + cit_element.attrib['id'])
+                            self.ParsedSeqRecord.dbxrefs.append(cit_element.attrib['type'] +
+                                                                ':' + cit_element.attrib['id'])
                             if cit_element.attrib['type'] == 'PubMed':
                                 reference.pubmed_id = cit_element.attrib['id']
                             elif ref_element.attrib['type'] == 'MEDLINE':
@@ -439,7 +437,7 @@ class Parser(object):
                 else:
                     try:
                         feature.qualifiers[feature_element.tag.replace(NS, '')] = feature_element.text
-                    except:
+                    except Exception:  # TODO - Which exceptions?
                         pass  # skip unparsable tag
             self.ParsedSeqRecord.features.append(feature)
 

@@ -65,8 +65,8 @@ class DistributionPage(object):
         end_y_pos = .5 * inch
         x_pos_change = ((end_x_pos - cur_x_pos) /
                         float(self.number_of_columns))
-        num_y_rows = math.ceil(float(len(self.distributions))
-                               / float(self.number_of_columns))
+        num_y_rows = math.ceil(float(len(self.distributions)) /
+                               float(self.number_of_columns))
         y_pos_change = (cur_y_pos - end_y_pos) / num_y_rows
 
         self._draw_distributions(cur_drawing, cur_x_pos, x_pos_change,
@@ -132,7 +132,7 @@ class DistributionPage(object):
 class BarChartDistribution(object):
     """Display the distribution of values as a bunch of bars."""
 
-    def __init__(self, display_info=[]):
+    def __init__(self, display_info=None):
         """Initialize a Bar Chart display of distribution info.
 
         Class attributes:
@@ -141,6 +141,8 @@ class BarChartDistribution(object):
            This should be ordered as a list of lists, where each internal list
            is a data set to display in the bar chart.
         """
+        if display_info is None:
+            display_info = []
         self.display_info = display_info
 
         self.x_axis_title = ""

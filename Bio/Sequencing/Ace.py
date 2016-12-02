@@ -58,8 +58,6 @@ are needed, the 'read' function rather than the 'parse' function might be more a
 from __future__ import print_function
 from Bio._py3k import zip
 
-__docformat__ = "restructuredtext en"
-
 
 class rd(object):
     """RD (reads), store a read with its name, sequence etc.
@@ -105,9 +103,9 @@ class ds(object):
             tagpos = dict(zip(poss, tags))
             if -1 in tagpos:
                 del tagpos[-1]
-            ps = sorted(tagpos) # the keys
-            for (p1, p2) in zip(ps, ps[1:]+[len(line)+1]):
-                setattr(self, tagpos[p1].lower(), line[p1+len(tagpos[p1])+1:p2].strip())
+            ps = sorted(tagpos)  # the keys
+            for (p1, p2) in zip(ps, ps[1:] + [len(line) + 1]):
+                setattr(self, tagpos[p1].lower(), line[p1 + len(tagpos[p1]) + 1:p2].strip())
 
 
 class af(object):

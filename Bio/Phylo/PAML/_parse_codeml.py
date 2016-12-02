@@ -1,9 +1,10 @@
-# Copyright (C) 2011 by Brandon Invergo (b.invergo@gmail.com)
+# Copyright (C) 2011, 2016 by Brandon Invergo (b.invergo@gmail.com)
 # This code is part of the Biopython distribution and governed by its
 # license. Please see the LICENSE file that should have been included
 # as part of this package.
 
 import re
+
 
 line_floats_re = re.compile("-*\d+\.\d+")
 
@@ -16,7 +17,7 @@ except ValueError:
         try:
             return float(text)
         except ValueError:
-            if text.lower()=="nan":
+            if text.lower() == "nan":
                 import struct
                 return struct.unpack('d', struct.pack('Q', 0xfff8000000000000))[0]
             else:
@@ -80,7 +81,7 @@ def parse_basics(lines, results):
             else:
                 multi_models = True
         # Get the maximum log-likelihood
-        if "ln Lmax" in line and len(line_floats) > 0:
+        if "ln Lmax" in line and line_floats:
             results["lnL max"] = line_floats[0]
     return (results, multi_models, multi_genes)
 
@@ -99,11 +100,12 @@ def parse_nssites(lines, results, multi_models, multi_genes):
         if siteclass_model is None:
             siteclass_model = "one-ratio"
         current_model = {"one-ratio": 0,
-                        "NearlyNeutral": 1,
-                        "PositiveSelection": 2,
-                        "discrete": 3,
-                        "beta": 7,
-                        "beta&w>1": 8}[siteclass_model]
+                         "NearlyNeutral": 1,
+                         "PositiveSelection": 2,
+                         "discrete": 3,
+                         "beta": 7,
+                         "beta&w>1": 8,
+                         "M2a_rel": 22}[siteclass_model]
         if multi_genes:
             genes = results["genes"]
             current_gene = None
@@ -113,13 +115,13 @@ def parse_nssites(lines, results, multi_models, multi_genes):
                 if gene_res:
                     if current_gene is not None:
                         parse_model(lines[gene_start:line_num], model_results)
-                        genes[current_gene-1] = model_results
+                        genes[current_gene - 1] = model_results
                     gene_start = line_num
                     current_gene = int(gene_res.group(1))
                     model_results = {"description": siteclass_model}
-            if len(genes[current_gene-1]) == 0:
+            if len(genes[current_gene - 1]) == 0:
                 model_results = parse_model(lines[gene_start:], model_results)
-                genes[current_gene-1] = model_results
+                genes[current_gene - 1] = model_results
         else:
             model_results = {"description": siteclass_model}
             model_results = parse_model(lines, model_results)
@@ -171,7 +173,7 @@ def parse_model(lines, results):
     dN_tree_flag = False
     w_tree_flag = False
     num_params = None
-    tree_re = re.compile("\(\(+")
+    tree_re = re.compile("^\([\w #:',.()]*\);\s*$")
     branch_re = re.compile("\s+(\d+\.\.\d+)[\s+\d+\.\d+]+")
     model_params_re = re.compile("(?<!\S)([a-z]\d?)\s*=\s+(\d+\.\d+)")
     for line in lines:
@@ -185,7 +187,7 @@ def parse_model(lines, results):
         # Find lnL values.
         # Example match (lnL = -2021.348300):
         # "lnL(ntime: 19  np: 22):  -2021.348300      +0.000000"
-        if "lnL(ntime:" in line and len(line_floats) > 0:
+        if "lnL(ntime:" in line and line_floats:
             results["lnL"] = line_floats[0]
             np_res = re.match("lnL\(ntime:\s+\d+\s+np:\s+(\d+)\)", line)
             if np_res is not None:
@@ -199,7 +201,7 @@ def parse_model(lines, results):
         elif len(line_floats) == num_params and not SEs_flag:
             parameters["parameter list"] = line.strip()
         # Find SEs. The same format as parameters above is maintained
-        # since there is a correspondance between the SE format and
+        # since there is a correspondence between the SE format and
         # the parameter format.
         # Example match:
         # "SEs for parameters:
@@ -211,7 +213,7 @@ def parse_model(lines, results):
             SEs_flag = False
         # Find tree lengths.
         # Example match: "tree length =   1.71931"
-        elif "tree length =" in line and len(line_floats) > 0:
+        elif "tree length =" in line and line_floats:
             results["tree length"] = line_floats[0]
         # Find the estimated trees only taking the tree if it has
         # lengths or rate estimates on the branches
@@ -236,18 +238,18 @@ def parse_model(lines, results):
                 w_tree_flag = True
         # Find rates for multiple genes
         # Example match: "rates for 2 genes:     1  2.75551"
-        elif "rates for" in line and len(line_floats) > 0:
+        elif "rates for" in line and line_floats:
             line_floats.insert(0, 1.0)
             parameters["rates"] = line_floats
         # Find kappa values.
         # Example match: "kappa (ts/tv) =  2.77541"
-        elif "kappa (ts/tv)" in line and len(line_floats) > 0:
+        elif "kappa (ts/tv)" in line and line_floats:
             parameters["kappa"] = line_floats[0]
         # Find omega values.
         # Example match: "omega (dN/dS) =  0.25122"
-        elif "omega (dN/dS)" in line and len(line_floats) > 0:
+        elif "omega (dN/dS)" in line and line_floats:
             parameters["omega"] = line_floats[0]
-        elif "w (dN/dS)" in line and len(line_floats) > 0:
+        elif "w (dN/dS)" in line and line_floats:
             parameters["omega"] = line_floats
         # Find omega and kappa values for multi-gene files
         # Example match: "gene # 1: kappa =   1.72615 omega =   0.39333"
@@ -256,14 +258,14 @@ def parse_model(lines, results):
             if parameters.get("genes") is None:
                 parameters["genes"] = {}
             parameters["genes"][gene_num] = {"kappa": line_floats[0],
-                                            "omega": line_floats[1]}
+                                             "omega": line_floats[1]}
         # Find dN values.
         # Example match: "tree length for dN:       0.2990"
-        elif "tree length for dN" in line and len(line_floats) > 0:
+        elif "tree length for dN" in line and line_floats:
             parameters["dN"] = line_floats[0]
         # Find dS values
         # Example match: "tree length for dS:       1.1901"
-        elif "tree length for dS" in line and len(line_floats) > 0:
+        elif "tree length for dS" in line and line_floats:
             parameters["dS"] = line_floats[0]
         # Find site class distributions.
         # Example match 1 (normal model, 2 site classes):
@@ -289,7 +291,7 @@ def parse_model(lines, results):
                 site_classes = parameters.get("site classes")
                 branch_type_no = int(branch_type.group(1))
                 site_classes = parse_clademodelc(branch_type_no, line_floats,
-                        site_classes)
+                                                 site_classes)
                 parameters["site classes"] = site_classes
         # Find the omega values of the foreground branch for each site
         # class in the branch site A model
@@ -312,14 +314,14 @@ def parse_model(lines, results):
         # method.
         # Example row (some spaces removed to make it smaller...).
         # " 6..7   0.000  167.7  54.3  0.0000  0.0000  0.0000  0.0  0.0"
-        elif branch_res is not None and len(line_floats) > 0:
+        elif branch_res is not None and line_floats:
             branch = branch_res.group(1)
             if parameters.get("branches") is None:
                 parameters["branches"] = {}
             # Hack for Jython http://bugs.jython.org/issue1762 float("-nan")
             line = line.replace(" -nan", " nan")
             params = line.strip().split()[1:]
-            parameters["branches"][branch]= {
+            parameters["branches"][branch] = {
                 "t": _nan_float(params[0].strip()),
                 "N": _nan_float(params[1].strip()),
                 "S": _nan_float(params[2].strip()),
@@ -333,28 +335,30 @@ def parse_model(lines, results):
         # Example matches:
         # "  p0=  0.99043  p=  0.36657 q=  1.04445
         # "  (p1=  0.00957) w=  3.25530"
-        elif len(model_params) > 0:
+        elif model_params:
             float_model_params = []
             for param in model_params:
                 float_model_params.append((param[0], _nan_float(param[1])))
             parameters.update(dict(float_model_params))
-    if len(parameters) > 0:
+    if parameters:
         results["parameters"] = parameters
     return results
 
 
 def parse_siteclass_proportions(line_floats):
-    """For models which have multiple site classes, find the proportion of the alignment assigned to each class.
+    """For models which have multiple site classes, find the proportion of the
+    alignment assigned to each class.
     """
     site_classes = {}
-    if len(line_floats) > 0:
+    if line_floats:
         for n in range(len(line_floats)):
             site_classes[n] = {"proportion": line_floats[n]}
     return site_classes
 
 
 def parse_siteclass_omegas(line, site_classes):
-    """For models which have multiple site classes, find the omega estimated for each class.
+    """For models which have multiple site classes, find the omega estimated
+    for each class.
     """
     # The omega results are tabular with strictly 9 characters per column
     # (1 to 3 digits before the  decimal point and 5 after). This causes
@@ -390,11 +394,9 @@ def parse_branch_site_a(foreground, line_floats, site_classes):
         if site_classes[n].get("branch types") is None:
             site_classes[n]["branch types"] = {}
         if foreground:
-            site_classes[n]["branch types"]["foreground"] =\
-                    line_floats[n]
+            site_classes[n]["branch types"]["foreground"] = line_floats[n]
         else:
-            site_classes[n]["branch types"]["background"] =\
-                    line_floats[n]
+            site_classes[n]["branch types"]["background"] = line_floats[n]
     return site_classes
 
 
@@ -427,13 +429,13 @@ def parse_pairwise(lines, results):
                 pairwise[seq2][seq1] = pairwise[seq1][seq2]
             elif len(line_floats) == 6:
                 pairwise[seq1][seq2] = {"t": line_floats[0],
-                        "S": line_floats[1],
-                        "N": line_floats[2],
-                        "omega": line_floats[3],
-                        "dN": line_floats[4],
-                        "dS": line_floats[5]}
+                                        "S": line_floats[1],
+                                        "N": line_floats[2],
+                                        "omega": line_floats[3],
+                                        "dN": line_floats[4],
+                                        "dS": line_floats[5]}
                 pairwise[seq2][seq1] = pairwise[seq1][seq2]
-    if len(pairwise) > 0:
+    if pairwise:
         results["pairwise"] = pairwise
     return results
 
@@ -461,7 +463,7 @@ def parse_distances(lines, results):
         # Parse AA distances (raw or ML), in a lower diagonal matrix
         matrix_row_res = matrix_row_re.match(line)
         if matrix_row_res and (raw_aa_distances_flag or
-                ml_aa_distances_flag):
+                               ml_aa_distances_flag):
             seq_name = matrix_row_res.group(1).strip()
             if seq_name not in sequences:
                 sequences.append(seq_name)
@@ -479,6 +481,6 @@ def parse_distances(lines, results):
                 for i in range(0, len(line_floats)):
                     distances["ml"][seq_name][sequences[i]] = line_floats[i]
                     distances["ml"][sequences[i]][seq_name] = line_floats[i]
-    if len(distances) > 0:
+    if distances:
         results["distances"] = distances
     return results

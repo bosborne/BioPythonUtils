@@ -12,7 +12,6 @@ be found in the paper `Konieczny and Ausubel (1993)`_ (PMID 8106085).
 .. _`Konieczny and Ausubel (1993)`: http://dx.doi.org/10.1046/j.1365-313X.1993.04020403.x
 """
 
-__docformat__ = "restructuredtext en"
 
 class DifferentialCutsite(object):
     """Differential enzyme cutsite in an alignment.
@@ -56,16 +55,18 @@ class CAPSMap(object):
        DifferentialCutsites.
     """
 
-    def __init__(self, alignment, enzymes = []):
+    def __init__(self, alignment, enzymes=None):
         """Initialize the CAPSMap.
 
         Required:
          - alignment - The alignment to be mapped.
 
         Optional:
-         - enzymes - The enzymes to be used to create the map.
+         - enzymes - List of enzymes to be used to create the map.
+           Defaults to an empty list.
         """
-
+        if enzymes is None:
+            enzymes = []
         self.sequences = [rec.seq for rec in alignment]
         self.size = len(self.sequences)
         self.length = len(self.sequences[0])
@@ -117,7 +118,10 @@ class CAPSMap(object):
                     blocked_in.append(i)
 
             if cuts_in != [] and blocked_in != []:
-                self.dcuts.append(DifferentialCutsite(start = cut, enzyme = enzyme, cuts_in = cuts_in, blocked_in = blocked_in))
+                self.dcuts.append(DifferentialCutsite(start=cut,
+                                                      enzyme=enzyme,
+                                                      cuts_in=cuts_in,
+                                                      blocked_in=blocked_in))
 
     def _digest(self):
         self.dcuts = []

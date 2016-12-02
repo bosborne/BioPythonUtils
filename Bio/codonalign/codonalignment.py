@@ -5,12 +5,10 @@
 # as part of this package.
 """Code for dealing with Codon Alignment.
 
-CodonAlignment class is interited from MultipleSeqAlignment class. This is
+CodonAlignment class is inherited from MultipleSeqAlignment class. This is
 the core class to deal with codon alignment in biopython.
 """
 from __future__ import division, print_function
-
-__docformat__ = "restructuredtext en"  # Don't just use plain text in epydoc API pages!
 
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqRecord import SeqRecord
@@ -43,7 +41,7 @@ class CodonAlignment(MultipleSeqAlignment):
         # check the type of the alignment to be nucleotide
         for rec in self:
             if not isinstance(rec.seq, CodonSeq):
-                raise TypeError("CodonSeq object are expected in each "
+                raise TypeError("CodonSeq objects are expected in each "
                                 "SeqRecord in CodonAlignment")
 
         assert self.get_alignment_length() % 3 == 0, \
@@ -123,7 +121,7 @@ class CodonAlignment(MultipleSeqAlignment):
         for i in range(size):
             dn_matrix.append([])
             ds_matrix.append([])
-            for j in range(i+1):
+            for j in range(i + 1):
                 if i != j:
                     dn, ds = cal_dn_ds(self._records[i], self._records[j],
                                        method=method)
@@ -155,7 +153,7 @@ class CodonAlignment(MultipleSeqAlignment):
             dn_tree = dn_constructor.nj(dn_dm)
             ds_tree = ds_constructor.nj(ds_dm)
         else:
-            raise RuntimeError("Unkown tree method ({0}). Only NJ and UPGMA "
+            raise RuntimeError("Unknown tree method ({0}). Only NJ and UPGMA "
                                "are accepted.".format(tree_method))
         return dn_tree, ds_tree
 
@@ -182,13 +180,13 @@ def mktest(codon_alns, codon_table=default_codon_table, alpha=0.05):
     Return the p-value of test result
     """
     import copy
-    if not all([isinstance(i, CodonAlignment) for i in codon_alns]):
-        raise TypeError("mktest accept CodonAlignment list.")
+    if not all(isinstance(i, CodonAlignment) for i in codon_alns):
+        raise TypeError("mktest accepts CodonAlignment list.")
     codon_aln_len = [i.get_alignment_length() for i in codon_alns]
     if len(set(codon_aln_len)) != 1:
         raise RuntimeError("CodonAlignment object for mktest should be of"
                            " equal length.")
-    codon_num = codon_aln_len[0]//3
+    codon_num = codon_aln_len[0] // 3
     # prepare codon_dict (taking stop codon as an extra amino acid)
     codon_dict = copy.deepcopy(codon_table.forward_table)
     for stop in codon_table.stop_codons:
@@ -203,7 +201,7 @@ def mktest(codon_alns, codon_table=default_codon_table, alpha=0.05):
     for i in range(codon_num):
         uniq_codons = []
         for j in codon_lst:
-            uniq_codon = set([k[i] for k in j])
+            uniq_codon = set(k[i] for k in j)
             uniq_codons.append(uniq_codon)
         codon_set.append(uniq_codons)
     syn_fix, nonsyn_fix, syn_poly, nonsyn_poly = 0, 0, 0, 0
@@ -212,7 +210,7 @@ def mktest(codon_alns, codon_table=default_codon_table, alpha=0.05):
         all_codon = i[0].union(*i[1:])
         if '-' in all_codon or len(all_codon) == 1:
             continue
-        fix_or_not = all([len(k) == 1 for k in i])
+        fix_or_not = all(len(k) == 1 for k in i)
         if fix_or_not:
             # fixed
             nonsyn_subgraph = _get_subgraph(all_codon, nonsyn_G)
@@ -233,7 +231,7 @@ def mktest(codon_alns, codon_table=default_codon_table, alpha=0.05):
 
 
 def _get_codon2codon_matrix(codon_table=default_codon_table):
-    """Function to get codon codon subsitution matrix. Elements
+    """Function to get codon codon substitution matrix. Elements
     in the matrix are number of synonymous and nonsynonymous
     substitutions required for the substitution (PRIVATE).
     """
@@ -260,7 +258,7 @@ def _get_codon2codon_matrix(codon_table=default_codon_table):
         graph_nonsyn[codon] = {}
         for p, b in enumerate(codon):
             for j in base_tuple:
-                tmp_codon = codon[0:p] + j + codon[p+1:]
+                tmp_codon = codon[0:p] + j + codon[p + 1:]
                 if codon_dict[codon] != codon_dict[tmp_codon]:
                     graph_nonsyn[codon][tmp_codon] = 1
                     graph[codon][tmp_codon] = 1
@@ -287,7 +285,7 @@ def _dijkstra(graph, start, end):
     Dijkstra's algorithm Python implementation.
     Algorithm adapted from
     http://thomas.pelletier.im/2010/02/dijkstras-algorithm-python-implementation/.
-    However, an abvious bug in::
+    However, an obvious bug in::
 
         if D[child_node] >(<) D[node] + child_value:
 
@@ -296,12 +294,12 @@ def _dijkstra(graph, start, end):
 
     Arguments:
 
-        - graph: Dictionnary of dictionnary (keys are vertices).
+        - graph: Dictionary of dictionary (keys are vertices).
         - start: Start vertex.
         - end: End vertex.
 
     Output:
-        List of vertices from the beggining to the end.
+        List of vertices from the beginning to the end.
     """
     D = {}  # Final distances dict
     P = {}  # Predecessor dict
@@ -345,8 +343,8 @@ def _dijkstra(graph, start, end):
         else:
             break
     path.insert(0, start)  # Finally, insert the start vertex
-    for i in range(len(path)-1):
-        distance += graph[path[i]][path[i+1]]
+    for i in range(len(path) - 1):
+        distance += graph[path[i]][path[i + 1]]
     return distance
 
 
@@ -419,7 +417,7 @@ def _G_test(site_counts):
 
         - site_counts - [syn_fix, nonsyn_fix, syn_poly, nonsyn_poly]
 
-    >>> round(_G_test([17, 7, 42, 2]), 7)
+    >>> print("%0.6f" % _G_test([17, 7, 42, 2]))
     0.004924
     """
     # TODO:
@@ -432,10 +430,10 @@ def _G_test(site_counts):
     tot_non = site_counts[1] + site_counts[3]
     tot_fix = sum(site_counts[:2])
     tot_poly = sum(site_counts[2:])
-    exp = [tot_fix*tot_syn/tot, tot_fix*tot_non/tot,
-           tot_poly*tot_syn/tot, tot_poly*tot_non/tot]
+    exp = [tot_fix * tot_syn / tot, tot_fix * tot_non / tot,
+           tot_poly * tot_syn / tot, tot_poly * tot_non / tot]
     for obs, ex in zip(site_counts, exp):
-        G += obs*log(obs/ex)
+        G += obs * log(obs / ex)
     G *= 2
     # return 1-chi2.cdf(G, 1) # only 1 dof for 2x2 table
     return chisqprob(G, 1)

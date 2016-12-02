@@ -7,10 +7,11 @@
 
 Third-party libraries are loaded when the corresponding function is called.
 """
-__docformat__ = "restructuredtext en"
 
 import math
 import sys
+
+from Bio import MissingPythonDependencyError
 
 
 def to_networkx(tree):
@@ -25,7 +26,6 @@ def to_networkx(tree):
     try:
         import networkx
     except ImportError:
-        from Bio import MissingPythonDependencyError
         raise MissingPythonDependencyError(
             "Install NetworkX if you want to use to_networkx.")
 
@@ -131,7 +131,6 @@ def draw_graphviz(tree, label_func=str, prog='twopi', args='',
     try:
         import networkx
     except ImportError:
-        from Bio import MissingPythonDependencyError
         raise MissingPythonDependencyError(
             "Install NetworkX if you want to use to_networkx.")
 
@@ -181,7 +180,8 @@ def draw_graphviz(tree, label_func=str, prog='twopi', args='',
                            for e in G.edges(data=True)]
 
     posn = dict((n, posi[int_labels[n]]) for n in G)
-    networkx.draw(G, posn, labels=labels, node_color=node_color, **kwargs)
+    networkx.draw(G, posn, labels=labels, with_labels=True,
+                  node_color=node_color, **kwargs)
 
 
 def draw_ascii(tree, file=None, column_width=80):
@@ -224,8 +224,8 @@ def draw_ascii(tree, file=None, column_width=80):
             depths = tree.depths(unit_branch_lengths=True)
         # Potential drawing overflow due to rounding -- 1 char per tree layer
         fudge_margin = int(math.ceil(math.log(len(taxa), 2)))
-        cols_per_branch_unit = ((drawing_width - fudge_margin)
-                                / float(max(depths.values())))
+        cols_per_branch_unit = ((drawing_width - fudge_margin) /
+                                float(max(depths.values())))
         return dict((clade, int(blen * cols_per_branch_unit + 1.0))
                     for clade, blen in depths.items())
 
@@ -279,7 +279,7 @@ def draw_ascii(tree, file=None, column_width=80):
 
 def draw(tree, label_func=str, do_show=True, show_confidence=True,
          # For power users
-         axes=None, branch_labels=None, *args, **kwargs):
+         axes=None, branch_labels=None, label_colors=None, *args, **kwargs):
     """Plot the given tree using matplotlib (or pylab).
 
     The graphic is a rooted tree, drawn with roughly the same algorithm as
@@ -321,6 +321,10 @@ def draw(tree, label_func=str, do_show=True, show_confidence=True,
             But if you would like to alter the formatting of confidence values,
             or label the branches with something other than confidence, then use
             this option.
+        label_colors : dict or callable
+            A function or a dictionary specifying the color of the tip label.
+            If the tip label can't be found in the dict or label_colors is
+            None, the label will be shown in black.
     """
 
     try:
@@ -329,7 +333,6 @@ def draw(tree, label_func=str, do_show=True, show_confidence=True,
         try:
             import pylab as plt
         except ImportError:
-            from Bio import MissingPythonDependencyError
             raise MissingPythonDependencyError(
                 "Install matplotlib or pylab if you want to use draw.")
 
@@ -364,6 +367,20 @@ def draw(tree, label_func=str, do_show=True, show_confidence=True,
         assert callable(branch_labels), \
             "branch_labels must be either a dict or a callable (function)"
         format_branch_label = branch_labels
+
+    # options for displaying label colors.
+    if label_colors:
+        if callable(label_colors):
+            def get_label_color(label):
+                return label_colors(label)
+        else:
+            # label_colors is presumed to be a dict
+            def get_label_color(label):
+                return label_colors.get(label, 'black')
+    else:
+        def get_label_color(label):
+            # if label_colors is not specified, use black
+            return 'black'
 
     # Layout
 
@@ -419,14 +436,14 @@ def draw(tree, label_func=str, do_show=True, show_confidence=True,
         Graphical formatting of the lines representing clades in the plot can be
         customized by altering this function.
         """
-        if (use_linecollection is False and orientation == 'horizontal'):
+        if not use_linecollection and orientation == 'horizontal':
             axes.hlines(y_here, x_start, x_here, color=color, lw=lw)
-        elif (use_linecollection is True and orientation == 'horizontal'):
+        elif use_linecollection and orientation == 'horizontal':
             horizontal_linecollections.append(mpcollections.LineCollection(
                 [[(x_start, y_here), (x_here, y_here)]], color=color, lw=lw),)
-        elif (use_linecollection is False and orientation == 'vertical'):
+        elif not use_linecollection and orientation == 'vertical':
             axes.vlines(x_here, y_bot, y_top, color=color)
-        elif (use_linecollection is True and orientation == 'vertical'):
+        elif use_linecollection and orientation == 'vertical':
             vertical_linecollections.append(mpcollections.LineCollection(
                 [[(x_here, y_bot), (x_here, y_top)]], color=color, lw=lw),)
 
@@ -446,7 +463,8 @@ def draw(tree, label_func=str, do_show=True, show_confidence=True,
         label = label_func(clade)
         if label not in (None, clade.__class__.__name__):
             axes.text(x_here, y_here, ' %s' %
-                      label, verticalalignment='center')
+                      label, verticalalignment='center',
+                      color=get_label_color(label))
         # Add label above the branch (optional)
         conf_label = format_branch_label(clade)
         if conf_label:

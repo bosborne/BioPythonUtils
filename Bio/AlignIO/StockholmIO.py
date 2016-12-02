@@ -1,8 +1,10 @@
-# Copyright 2006-2013 by Peter Cock.  All rights reserved.
+# Copyright 2006-2016 by Peter Cock.  All rights reserved.
+# Revisions copyright 2015 by Ben Woodcroft.  All rights reserved.
 #
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
+
 """Bio.AlignIO support for "stockholm" format (used in the PFAM database).
 
 You are expected to use this module via the Bio.AlignIO functions (or the
@@ -120,7 +122,7 @@ with Alignnment objects. Again, if you want to you can specify this is RNA:
     AAAAUUGAAUAUCGUUUUACUUGUUUAU-GUCGUGAAU-UGG-CACGA-CGUUUCUACAAGGUG-CCGG-AA-CACCUAACAAUAAGUAAGUCAGCAGUGAGAU
     -----------------<<<<<<<<-----<<.<<-------->>.>>----------.<<<<<--------->>>>>.-->>>>>>>>---------------
 
-Remember that if you slice a SeqRecord, the per-letter-annotions like the
+Remember that if you slice a SeqRecord, the per-letter-annotations like the
 secondary structure string here, are also sliced:
 
     >>> sub_record = record[10:20]
@@ -131,11 +133,11 @@ secondary structure string here, are also sliced:
 """
 from __future__ import print_function
 
-__docformat__ = "restructuredtext en"  # not just plaintext
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Align import MultipleSeqAlignment
 from .Interfaces import AlignmentIterator, SequentialAlignmentWriter
+from Bio._py3k import OrderedDict
 
 
 class StockholmWriter(SequentialAlignmentWriter):
@@ -312,12 +314,19 @@ class StockholmIterator(AlignmentIterator):
                        "OC": "organism_classification",
                        "LO": "look"}
 
+    _header = None  # for caching lines between __next__ calls
+
     def __next__(self):
-        try:
+        handle = self.handle
+
+        if self._header is None:
+            line = handle.readline()
+        else:
+            # Header we saved from when we were parsing
+            # the previous alignment.
             line = self._header
-            del self._header
-        except AttributeError:
-            line = self.handle.readline()
+            self._header = None
+
         if not line:
             # Empty file - just give up.
             raise StopIteration
@@ -330,13 +339,13 @@ class StockholmIterator(AlignmentIterator):
         # if present it agrees with our parsing.
 
         seqs = {}
-        ids = []
+        ids = OrderedDict()  # Really only need an OrderedSet, but python lacks this
         gs = {}
         gr = {}
         gf = {}
         passed_end_alignment = False
         while True:
-            line = self.handle.readline()
+            line = handle.readline()
             if not line:
                 break  # end of file
             line = line.strip()  # remove trailing \n
@@ -358,10 +367,10 @@ class StockholmIterator(AlignmentIterator):
                 if len(parts) != 2:
                     # This might be someone attempting to store a zero length sequence?
                     raise ValueError("Could not split line into identifier "
-                                      + "and sequence:\n" + line)
+                                     "and sequence:\n" + line)
                 id, seq = parts
                 if id not in ids:
-                    ids.append(id)
+                    ids[id] = True
                 seqs.setdefault(id, '')
                 seqs[id] += seq.replace(".", "-")
             elif len(line) >= 5:
@@ -412,7 +421,7 @@ class StockholmIterator(AlignmentIterator):
         # assert len(gs)   <= len(ids)
         # assert len(gr)   <= len(ids)
 
-        self.ids = ids
+        self.ids = ids.keys()
         self.sequences = seqs
         self.seq_annotation = gs
         self.seq_col_annotation = gr

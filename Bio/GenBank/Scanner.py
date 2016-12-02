@@ -30,12 +30,11 @@ from __future__ import print_function
 
 import warnings
 import re
+from collections import defaultdict
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import generic_protein
 from Bio import BiopythonParserWarning
-
-__docformat__ = "restructuredtext en"
 
 
 class InsdcScanner(object):
@@ -201,7 +200,7 @@ class InsdcScanner(object):
                     feature_lines = [line[self.FEATURE_QUALIFIER_INDENT:]]
                 line = self.handle.readline()
                 while line[:self.FEATURE_QUALIFIER_INDENT] == self.FEATURE_QUALIFIER_SPACER \
-                        or line.rstrip() == "":  # cope with blank lines in the midst of a feature
+                        or (line != '' and line.rstrip() == ""):  # cope with blank lines in the midst of a feature
                     # Use strip to remove any harmless trailing white space AND and leading
                     # white space (e.g. out of spec files with too much indentation)
                     feature_lines.append(line[self.FEATURE_QUALIFIER_INDENT:].strip())
@@ -273,6 +272,14 @@ class InsdcScanner(object):
                 # Multiline location, still more to come!
                 line = next(iterator)
                 feature_location += line.strip()
+            if feature_location.count("(") > feature_location.count(")"):
+                # Including the prev line in warning would be more explicit,
+                # but this way get one-and-only-one warning shown by default:
+                warnings.warn("Non-standard feature line wrapping (didn't break on comma)?",
+                              BiopythonParserWarning)
+                while feature_location[-1:] == "," or feature_location.count("(") > feature_location.count(")"):
+                    line = next(iterator)
+                    feature_location += line.strip()
 
             qualifiers = []
 
@@ -587,7 +594,7 @@ class EmblScanner(InsdcScanner):
             self.line = self.line.rstrip()
 
         assert self.line[:self.HEADER_WIDTH] == " " * self.HEADER_WIDTH \
-            or self.line.strip() == '//', repr(self.line)
+            or self.line.strip() == '//', "Unexpected content after SQ or CO line: %r" % self.line
 
         seq_lines = []
         line = self.line
@@ -602,7 +609,9 @@ class EmblScanner(InsdcScanner):
             assert self.line[:self.HEADER_WIDTH] == " " * self.HEADER_WIDTH, \
                 repr(self.line)
             # Remove tailing number now, remove spaces later
-            seq_lines.append(line.rsplit(None, 1)[0])
+            linersplit = line.rsplit(None, 1)
+            if(len(linersplit) > 1):
+                seq_lines.append(linersplit[0])
             line = self.handle.readline()
         self.line = line
         return (misc_lines, "".join(seq_lines).replace(" ", ""))
@@ -801,10 +810,24 @@ class EmblScanner(InsdcScanner):
                 # Remove trailing ; at end of authors list
                 consumer.authors(data.rstrip(";"))
             elif line_type == 'PR':
-                # Remove trailing ; at end of the project reference
-                # In GenBank files this corresponds to the old PROJECT
-                # line which is being replaced with the DBLINK line.
-                consumer.project(data.rstrip(";"))
+                # In the EMBL patent files, this is a PR (PRiority) line which
+                # provides the earliest active priority within the family.
+                # The priority  number comes first, followed by the priority date.
+                #
+                # e.g.
+                # PR   JP19990377484 16-DEC-1999
+                #
+                # However, in most EMBL files this is a PR (PRoject) line which
+                # gives the BioProject reference number.
+                #
+                # e.g.
+                # PR   Project:PRJNA60715;
+                #
+                # In GenBank files this corresponds to the old PROJECT line
+                # which was later replaced with the DBLINK line.
+                if data.startswith("Project:"):
+                    # Remove trailing ; at end of the project reference
+                    consumer.project(data.rstrip(";"))
             elif line_type == 'KW':
                 consumer.keywords(data.rstrip(";"))
             elif line_type in consumer_dict:
@@ -1075,8 +1098,15 @@ class GenBankScanner(InsdcScanner):
             # Should be possible to split them based on position, if
             # a clear definition of the standard exists THAT AGREES with
             # existing files.
-            consumer.locus(name_and_length[0])
-            consumer.size(name_and_length[1])
+            name, length = name_and_length
+            if len(name) > 16:
+                # As long as the sequence is short, can steal its leading spaces
+                # to extend the name over the current 16 character limit.
+                # However, that deserves a warning as it is out of spec.
+                warnings.warn("GenBank LOCUS line identifier over 16 characters",
+                              BiopythonParserWarning)
+            consumer.locus(name)
+            consumer.size(length)
             # consumer.residue_type(line[33:41].strip())
 
             if line[33:51].strip() == "" and line[29:33] == ' aa ':
@@ -1238,6 +1268,9 @@ class GenBankScanner(InsdcScanner):
         # handled individually.
         GENBANK_INDENT = self.HEADER_WIDTH
         GENBANK_SPACER = " " * GENBANK_INDENT
+        STRUCTURED_COMMENT_START = "-START##"
+        STRUCTURED_COMMENT_END = "-END##"
+        STRUCTURED_COMMENT_DELIM = " :: "
         consumer_dict = {
             'DEFINITION': 'definition',
             'ACCESSION': 'accession',
@@ -1250,7 +1283,6 @@ class GenBankScanner(InsdcScanner):
             'AUTHORS': 'authors',
             'CONSRTM': 'consrtm',
             'PROJECT': 'project',
-            'DBLINK': 'dblink',
             'TITLE': 'title',
             'JOURNAL': 'journal',
             'MEDLINE': 'medline_id',
@@ -1260,6 +1292,7 @@ class GenBankScanner(InsdcScanner):
         # ORIGIN (locus, size, residue_type, data_file_division and date)
         # COMMENT (comment)
         # VERSION (version and gi)
+        # DBLINK (database links like projects, newlines important)
         # REFERENCE (eference_num and reference_bases)
         # ORGANISM (organism and taxonomy)
         lines = [_f for _f in lines if _f]
@@ -1288,6 +1321,20 @@ class GenBankScanner(InsdcScanner):
                         consumer.gi(data.split(' GI:')[1])
                     # Read in the next line!
                     line = next(line_iter)
+                elif line_type == 'DBLINK':
+                    # Need to call consumer.dblink() for each line, e.g.
+                    # DBLINK      Project: 57779
+                    #             BioProject: PRJNA57779
+                    consumer.dblink(data.strip())
+                    # Read in the next line, and see if its more of the DBLINK section:
+                    while True:
+                        line = next(line_iter)
+                        if line[:GENBANK_INDENT] == GENBANK_SPACER:
+                            # Add this continuation to the data string
+                            consumer.dblink(line[GENBANK_INDENT:].strip())
+                        else:
+                            # End of the DBLINK, leave this text in the variable "line"
+                            break
                 elif line_type == 'REFERENCE':
                     if self.debug > 1:
                         print("Found reference [" + data + "]")
@@ -1344,6 +1391,9 @@ class GenBankScanner(InsdcScanner):
                         if line[0:GENBANK_INDENT] == GENBANK_SPACER:
                             if lineage_data or ";" in line:
                                 lineage_data += " " + line[GENBANK_INDENT:]
+                            elif line[GENBANK_INDENT:].strip() == ".":
+                                # No lineage data, just . place holder
+                                pass
                             else:
                                 organism_data += " " + line[GENBANK_INDENT:].strip()
                         else:
@@ -1355,26 +1405,54 @@ class GenBankScanner(InsdcScanner):
                     consumer.taxonomy(lineage_data.strip())
                     del organism_data, lineage_data
                 elif line_type == 'COMMENT':
+                    # A COMMENT can either be plain text or tabular (Structured Comment),
+                    # or contain both. Multiline comments are common. The code calls
+                    # consumer.comment() once with a list where each entry
+                    # is a line. If there's a structured comment consumer.structured_comment()
+                    # is called with a dict of dicts where the secondary key/value pairs are
+                    # the same as those in the structured comment table. The primary key is
+                    # the title or header of the table (e.g. Assembly-Data, FluData). See
+                    # http://www.ncbi.nlm.nih.gov/genbank/structuredcomment
+                    # for more information on Structured Comments.
+                    data = line[GENBANK_INDENT:]
                     if self.debug > 1:
                         print("Found comment")
-                    # This can be multiline, and should call consumer.comment() once
-                    # with a list where each entry is a line.
                     comment_list = []
-                    comment_list.append(data)
+                    structured_comment_dict = defaultdict(dict)
+                    structured_comment_key = ''
+
+                    if STRUCTURED_COMMENT_START in data:
+                        structured_comment_key = re.search(r"([^#]+){0}$".format(STRUCTURED_COMMENT_START), data).group(1)
+                        if self.debug > 1:
+                            print("Found Structured Comment")
+                    else:
+                        comment_list.append(data)
+
                     while True:
                         line = next(line_iter)
+                        data = line[GENBANK_INDENT:]
                         if line[0:GENBANK_INDENT] == GENBANK_SPACER:
-                            data = line[GENBANK_INDENT:]
-                            comment_list.append(data)
-                            if self.debug > 2:
-                                print("Comment continuation [" + data + "]")
+                            if STRUCTURED_COMMENT_START in data:
+                                structured_comment_key = re.search(r"([^#]+){0}$".format(STRUCTURED_COMMENT_START), data).group(1)
+                            elif structured_comment_key is not None and STRUCTURED_COMMENT_DELIM in data:
+                                match = re.search(r"(.+?)\s*{0}\s*(.+)".format(STRUCTURED_COMMENT_DELIM), data)
+                                structured_comment_dict[structured_comment_key][match.group(1)] = match.group(2)
+                                if self.debug > 2:
+                                    print("Structured Comment continuation [" + data + "]")
+                            elif STRUCTURED_COMMENT_END not in data:
+                                comment_list.append(data)
+                                if self.debug > 2:
+                                    print("Comment continuation [" + data + "]")
                         else:
                             # End of the comment
                             break
-                    consumer.comment(comment_list)
-                    del comment_list
+                    if comment_list:
+                        consumer.comment(comment_list)
+                    if structured_comment_dict:
+                        consumer.structured_comment(structured_comment_dict)
+                    del comment_list, structured_comment_key, structured_comment_dict
                 elif line_type in consumer_dict:
-                    # Its a semi-automatic entry!
+                    # It's a semi-automatic entry!
                     # Now, this may be a multi line entry...
                     while True:
                         line = next(line_iter)

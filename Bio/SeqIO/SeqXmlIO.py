@@ -29,7 +29,7 @@ from Bio.SeqRecord import SeqRecord
 from .Interfaces import SequentialSequenceWriter
 
 
-class XMLRecordIterator:
+class XMLRecordIterator(object):
     """Base class for building iterators for record style XML formats.
 
     It is assumed that all information for one record can be found within a
@@ -134,7 +134,7 @@ class SeqXmlIterator(XMLRecordIterator):
         if "name" not in attr_dict:
             raise ValueError("Malformed property element.")
 
-        value = attr_dict.get("value", None)
+        value = attr_dict.get("value")
 
         if attr_dict["name"] not in record.annotations:
             record.annotations[attr_dict["name"]] = value
@@ -418,25 +418,3 @@ class SeqXmlWriter(SequentialSequenceWriter):
                     self.xml_generator.startElement(
                         "property", AttributesImpl(attr))
                     self.xml_generator.endElement("property")
-
-if __name__ == "__main__":
-    print("Running quick self test")
-
-    from Bio import SeqIO
-    import sys
-
-    with open("Tests/SeqXML/protein_example.xml", "r") as fileHandle:
-        records = list(SeqIO.parse(fileHandle, "seqxml"))
-
-    from Bio._py3k import StringIO
-    stringHandle = StringIO()
-
-    SeqIO.write(records, stringHandle, "seqxml")
-    SeqIO.write(records, sys.stdout, "seqxml")
-    print("")
-
-    stringHandle.seek(0)
-    records = list(SeqIO.parse(stringHandle, "seqxml"))
-
-    SeqIO.write(records, sys.stdout, "seqxml")
-    print("")

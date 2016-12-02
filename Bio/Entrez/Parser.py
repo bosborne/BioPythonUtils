@@ -1,4 +1,5 @@
-# Copyright 2008 by Michiel de Hoon.  All rights reserved.
+# Copyright 2008-2014 by Michiel de Hoon.  All rights reserved.
+# Revisions copyright 2008-2015 by Peter Cock. All rights reserved.
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
@@ -32,20 +33,21 @@ XML, the parser analyzes the DTD referred at the top of (almost) every
 XML file returned by the Entrez Utilities. This is preferred over a hand-
 written solution, since the number of DTDs is rather large and their
 contents may change over time. About half the code in this parser deals
-wih parsing the DTD, and the other half with the XML itself.
+with parsing the DTD, and the other half with the XML itself.
 """
-
+import sys
+import re
 import os
 import warnings
 from xml.parsers import expat
 from io import BytesIO
+import xml.etree.ElementTree as ET
 
 # Importing these functions with leading underscore as not intended for reuse
 from Bio._py3k import urlopen as _urlopen
 from Bio._py3k import urlparse as _urlparse
 from Bio._py3k import unicode
 
-__docformat__ = "restructuredtext en"
 
 # The following four classes are used to add a member .attributes to integers,
 # strings, lists, and dictionaries, respectively.
@@ -143,12 +145,20 @@ class CorruptedXMLError(ValueError):
 
 
 class ValidationError(ValueError):
-    """Validating parsers raise this error if the parser finds a tag in the XML that is not defined in the DTD. Non-validating parsers do not raise this error. The Bio.Entrez.read and Bio.Entrez.parse functions use validating parsers by default (see those functions for more information)"""
+    """XML tag found which was not defined in the DTD.
+
+    Validating parsers raise this error if the parser finds a tag in the XML
+    that is not defined in the DTD. Non-validating parsers do not raise this
+    error. The Bio.Entrez.read and Bio.Entrez.parse functions use validating
+    parsers by default (see those functions for more information).
+    """
     def __init__(self, name):
         self.name = name
 
     def __str__(self):
-        return "Failed to find tag '%s' in the DTD. To skip all tags that are not represented in the DTD, please call Bio.Entrez.read or Bio.Entrez.parse with validate=False." % self.name
+        return ("Failed to find tag '%s' in the DTD. To skip all tags that "
+                "are not represented in the DTD, please call Bio.Entrez.read "
+                "or Bio.Entrez.parse with validate=False." % self.name)
 
 
 class DataHandler(object):
@@ -161,6 +171,7 @@ class DataHandler(object):
         directory = os.path.join(home, '.config', 'biopython')
         del home
     local_dtd_dir = os.path.join(directory, 'Bio', 'Entrez', 'DTDs')
+    local_xsd_dir = os.path.join(directory, 'Bio', 'Entrez', 'XSDs')
     del directory
     del platform
     try:
@@ -171,9 +182,15 @@ class DataHandler(object):
         # a race condition.
         if not os.path.isdir(local_dtd_dir):
             raise exception
+    try:
+        os.makedirs(local_xsd_dir)  # use exist_ok=True on Python >= 3.2
+    except OSError as exception:
+        if not os.path.isdir(local_xsd_dir):
+            raise exception
 
     from Bio import Entrez
     global_dtd_dir = os.path.join(str(Entrez.__path__[0]), "DTDs")
+    global_xsd_dir = os.path.join(str(Entrez.__path__[0]), "XSDs")
     del Entrez
 
     def __init__(self, validate):
@@ -190,6 +207,7 @@ class DataHandler(object):
         self.parser = expat.ParserCreate(namespace_separator=" ")
         self.parser.SetParamEntityParsing(expat.XML_PARAM_ENTITY_PARSING_ALWAYS)
         self.parser.XmlDeclHandler = self.xmlDeclHandler
+        self.is_schema = False
 
     def read(self, handle):
         """Set up the parser and let it parse the XML results"""
@@ -197,10 +215,20 @@ class DataHandler(object):
         # expects binary data
         if handle.__class__.__name__ == 'EvilHandleHack':
             handle = handle._handle
+        if handle.__class__.__name__ == 'TextIOWrapper':
+            handle = handle.buffer
         if hasattr(handle, "closed") and handle.closed:
             # Should avoid a possible Segmentation Fault, see:
             # http://bugs.python.org/issue4877
             raise IOError("Can't parse a closed handle")
+        if sys.version_info[0] >= 3:
+            # Another nasty hack to cope with a unicode StringIO handle
+            # since the Entrez XML parser expects binary data (bytes)
+            from io import StringIO
+            if isinstance(handle, StringIO):
+                from io import BytesIO
+                from Bio._py3k import _as_bytes
+                handle = BytesIO(_as_bytes(handle.read()))
         try:
             self.parser.ParseFile(handle)
         except expat.ExpatError as e:
@@ -236,7 +264,7 @@ class DataHandler(object):
                 if self.stack:
                     # No more XML data, but there is still some unfinished
                     # business
-                    raise CorruptedXMLError
+                    raise CorruptedXMLError("Premature end of XML stream")
                 try:
                     for record in self.object:
                         yield record
@@ -287,9 +315,28 @@ class DataHandler(object):
         self.parser.StartNamespaceDeclHandler = self.startNamespaceDeclHandler
 
     def startNamespaceDeclHandler(self, prefix, un):
-        raise NotImplementedError("The Bio.Entrez parser cannot handle XML data that make use of XML namespaces")
+        # This is an xml schema
+        if "Schema" in un:
+            self.is_schema = True
+        else:
+            raise NotImplementedError("The Bio.Entrez parser cannot handle XML data that make use of XML namespaces")
 
     def startElementHandler(self, name, attrs):
+        # preprocessing the xml schema
+        if self.is_schema:
+            if len(attrs) == 1:
+                schema = list(attrs.values())[0]
+                handle = self.open_xsd_file(os.path.basename(schema))
+                # if there is no local xsd file grab the url and parse the file
+                if not handle:
+                    handle = _urlopen(schema)
+                    text = handle.read()
+                    self.save_xsd_file(os.path.basename(schema), text)
+                    handle.close()
+                    self.parse_xsd(ET.fromstring(text))
+                else:
+                    self.parse_xsd(ET.fromstring(handle.read()))
+                    handle.close()
         self.content = ""
         if name in self.lists:
             object = ListElement()
@@ -364,6 +411,9 @@ class DataHandler(object):
             name = self.object.itemname
         else:
             self.object = self.stack.pop()
+            value = re.sub(r"[\s]+", "", value)
+            if self.is_schema and value:
+                self.object.update({'data': value})
             return
         value.tag = name
         if self.attributes:
@@ -378,6 +428,22 @@ class DataHandler(object):
 
     def characterDataHandler(self, content):
         self.content += content
+
+    def parse_xsd(self, root):
+        is_dictionary = False
+        name = ""
+        for child in root:
+            for element in child.getiterator():
+                if "element" in element.tag:
+                    if "name" in element.attrib:
+                        name = element.attrib['name']
+                if "attribute" in element.tag:
+                    is_dictionary = True
+            if is_dictionary:
+                self.dictionaries.append(name)
+                is_dictionary = False
+            else:
+                self.lists.append(name)
 
     def elementDecl(self, name, model):
         """This callback function is called for each element declaration:
@@ -403,10 +469,10 @@ class DataHandler(object):
             return
         # First, remove ignorable parentheses around declarations
         while (model[0] in (expat.model.XML_CTYPE_SEQ,
-                            expat.model.XML_CTYPE_CHOICE)
-          and model[1] in (expat.model.XML_CQUANT_NONE,
-                           expat.model.XML_CQUANT_OPT)
-          and len(model[3]) == 1):
+                            expat.model.XML_CTYPE_CHOICE) and
+               model[1] in (expat.model.XML_CQUANT_NONE,
+                           expat.model.XML_CQUANT_OPT) and
+               len(model[3]) == 1):
             model = model[3][0]
         # PCDATA declarations correspond to strings
         if model[0] in (expat.model.XML_CTYPE_MIXED,
@@ -475,8 +541,35 @@ class DataHandler(object):
             return handle
         return None
 
+    def open_xsd_file(self, filename):
+        path = os.path.join(DataHandler.local_xsd_dir, filename)
+        try:
+            handle = open(path, "rb")
+        except IOError:
+            pass
+        else:
+            return handle
+        path = os.path.join(DataHandler.global_xsd_dir, filename)
+        try:
+            handle = open(path, "rb")
+        except IOError:
+            pass
+        else:
+            return handle
+        return None
+
     def save_dtd_file(self, filename, text):
         path = os.path.join(DataHandler.local_dtd_dir, filename)
+        try:
+            handle = open(path, "wb")
+        except IOError:
+            warnings.warn("Failed to save %s at %s" % (filename, path))
+        else:
+            handle.write(text)
+            handle.close()
+
+    def save_xsd_file(self, filename, text):
+        path = os.path.join(DataHandler.local_xsd_dir, filename)
         try:
             handle = open(path, "wb")
         except IOError:
@@ -494,22 +587,24 @@ class DataHandler(object):
         urlinfo = _urlparse(systemId)
         # Following attribute requires Python 2.5+
         # if urlinfo.scheme=='http':
-        if urlinfo[0] == 'http':
+        if urlinfo[0] in ['http', 'https', 'ftp']:
             # Then this is an absolute path to the DTD.
             url = systemId
         elif urlinfo[0] == '':
             # Then this is a relative path to the DTD.
             # Look at the parent URL to find the full path.
             try:
-                url = self.dtd_urls[-1]
+                source = self.dtd_urls[-1]
             except IndexError:
                 # Assume the default URL for DTDs if the top parent
                 # does not contain an absolute path
                 source = "http://www.ncbi.nlm.nih.gov/dtd/"
             else:
-                source = os.path.dirname(url)
+                source = os.path.dirname(source)
             # urls always have a forward slash, don't use os.path.join
             url = source.rstrip("/") + "/" + systemId
+        else:
+            raise ValueError("Unexpected URL scheme %r" % (urlinfo[0]))
         self.dtd_urls.append(url)
         # First, try to load the local version of the DTD file
         location, filename = os.path.split(systemId)

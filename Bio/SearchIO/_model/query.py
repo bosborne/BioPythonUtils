@@ -21,9 +21,6 @@ from ._base import _BaseSearchObject
 from .hit import Hit
 
 
-__docformat__ = "restructuredtext en"
-
-
 class QueryResult(_BaseSearchObject):
 
     """Class representing search results from a single query.
@@ -188,7 +185,7 @@ class QueryResult(_BaseSearchObject):
     # from this one
     _NON_STICKY_ATTRS = ('_items', '__alt_hit_ids', )
 
-    def __init__(self, hits=[], id=None,
+    def __init__(self, hits=(), id=None,
             hit_key_function=lambda hit: hit.id):
         """Initializes a QueryResult object.
 
@@ -299,7 +296,7 @@ class QueryResult(_BaseSearchObject):
         return bool(self._items)
 
     # Python 2:
-    __nonzero__= __bool__
+    __nonzero__ = __bool__
 
     def __repr__(self):
         return "QueryResult(id=%r, %r hits)" % (self.id, len(self))
@@ -325,10 +322,10 @@ class QueryResult(_BaseSearchObject):
         if not self.hits:
             lines.append('   Hits: 0')
         else:
-            lines.append('   Hits: %s  %s  %s' % ('-'*4, '-'*5, '-'*58))
+            lines.append('   Hits: %s  %s  %s' % ('-' * 4, '-' * 5, '-' * 58))
             pattern = '%13s  %5s  %s'
             lines.append(pattern % ('#', '# HSP', 'ID + description'))
-            lines.append(pattern % ('-'*4, '-'*5, '-'*58))
+            lines.append(pattern % ('-' * 4, '-' * 5, '-' * 58))
             for idx, hit in enumerate(self.hits):
                 if idx < 30:
                     hid_line = '%s  %s' % (hit.id, hit.description)
@@ -497,7 +494,7 @@ class QueryResult(_BaseSearchObject):
         else:
             hit_key = hit.id
 
-        if hit_key not in self and all([pid not in self for pid in hit.id_all[1:]]):
+        if hit_key not in self and all(pid not in self for pid in hit.id_all[1:]):
             self[hit_key] = hit
         else:
             raise ValueError("The ID or alternative IDs of Hit %r exists in "

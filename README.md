@@ -7,8 +7,6 @@ BioPythonUtils
 
 If you don't have Package Control see https://sublime.wbond.net.
 
-[BioPython](http://biopython.org) 1.65 is bundled with this package, minus the Tests and documentation, you do not need to install it.
-
 ### Configure with your email address, and [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) defaults
 
 ~~~~
@@ -21,6 +19,8 @@ If you don't have Package Control see https://sublime.wbond.net.
 ~~~~
 
 The email address is required if you want to download from [NCBI](http://www.ncbi.nlm.nih.gov) using [EUtils](http://www.ncbi.nlm.nih.gov/books/NBK25500).
+
+[BioPython](http://biopython.org) 1.68 is bundled with this package, minus the Tests and documentation, you do not need to install it.
 
 ### Commands
 
@@ -49,9 +49,9 @@ gggaatcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacc
 atgctgtcaatcacgattctgttggtgctcatagcagagggctcctctcagaattacacg
 gggagtcctgtgatatgcctgggacatcatgctgtatccaatgggacaatggtgaaaacg
 ~~~~
-Translation starts at the first codon and continues to the last, including stop codons.
+Translation starts at the first codon and continues to the last, regardless of stop codons.
 
-#### "Download Sequence" 
+#### "Download Sequence"
 
 Downloads sequence from [NCBI](http://www.ncbi.nlm.nih.gov) using the selected ids. Ids can be delimited by commas, returns, or space. For example:
 ~~~~
@@ -67,7 +67,7 @@ or:
 284218, 203807
 ~~~~
 
-#### "Download Taxon" 
+#### "Download Taxon"
 
 Downloads a taxon as GenBank entries from [NCBI](http://www.ncbi.nlm.nih.gov) using the selected [NCBI Taxonomy](http://www.ncbi.nlm.nih.gov/taxonomy) ids. Ids can be delimited by commas, returns, or space.
 

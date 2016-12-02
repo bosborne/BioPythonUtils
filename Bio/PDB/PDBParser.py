@@ -11,7 +11,7 @@ import warnings
 
 try:
     import numpy
-except:
+except ImportError:
     from Bio import MissingPythonDependencyError
     raise MissingPythonDependencyError(
         "Install NumPy if you want to use the PDB parser.")
@@ -78,7 +78,7 @@ class PDBParser(object):
             # Make a StructureBuilder instance (pass id of structure as parameter)
             self.structure_builder.init_structure(id)
 
-            with as_handle(file) as handle:
+            with as_handle(file, mode='rU') as handle:
                 self._parse(handle.readlines())
 
             self.structure_builder.set_header(self.header)
@@ -133,7 +133,7 @@ class PDBParser(object):
         current_residue_id = None
         current_resname = None
         for i in range(0, len(coords_trailer)):
-            line = coords_trailer[i]
+            line = coords_trailer[i].rstrip('\n')
             record_type = line[0:6]
             global_line_counter = self.line_counter + local_line_counter + 1
             structure_builder.set_line_counter(global_line_counter)
@@ -158,7 +158,7 @@ class PDBParser(object):
                 chainid = line[21]
                 try:
                     serial_number = int(line[6:11])
-                except:
+                except Exception:
                     serial_number = 0
                 resseq = int(line[22:26].split()[0])  # sequence identifier
                 icode = line[26]  # insertion code
@@ -175,7 +175,7 @@ class PDBParser(object):
                     x = float(line[30:38])
                     y = float(line[38:46])
                     z = float(line[46:54])
-                except:
+                except Exception:
                     # Should we allow parsing to continue in permissive mode?
                     # If so, what coordinates should we default to?  Easier to abort!
                     raise PDBConstructionException("Invalid or missing coordinate(s) at line %i."
@@ -184,7 +184,7 @@ class PDBParser(object):
                 # occupancy & B factor
                 try:
                     occupancy = float(line[54:60])
-                except:
+                except Exception:
                     self._handle_PDB_exception("Invalid or missing occupancy",
                                                global_line_counter)
                     occupancy = None  # Rather than arbitrary zero or one
@@ -196,12 +196,12 @@ class PDBParser(object):
                     warnings.warn("Negative occupancy in one or more atoms", PDBConstructionWarning)
                 try:
                     bfactor = float(line[60:66])
-                except:
+                except Exception:
                     self._handle_PDB_exception("Invalid or missing B factor",
                                                global_line_counter)
                     bfactor = 0.0  # The PDB use a default of zero if the data is missing
                 segid = line[72:76]
-                element = line[76:78].strip()
+                element = line[76:78].strip().upper()
                 if current_segid != segid:
                     current_segid = segid
                     structure_builder.init_seg(current_segid)
@@ -236,7 +236,7 @@ class PDBParser(object):
             elif record_type == "MODEL ":
                 try:
                     serial_num = int(line[10:14])
-                except:
+                except Exception:
                     self._handle_PDB_exception("Invalid or missing model serial number",
                                                global_line_counter)
                     serial_num = 0

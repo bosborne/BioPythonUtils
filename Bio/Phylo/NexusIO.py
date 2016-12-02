@@ -4,7 +4,6 @@
 # as part of this package.
 
 """I/O function wrappers for `Bio.Nexus` trees."""
-__docformat__ = "restructuredtext en"
 
 from itertools import chain
 
@@ -25,7 +24,7 @@ End;
 """
 
 # 'index' starts from 1; 'tree' is the Newick tree string
-TREE_TEMPLATE = "Tree tree%(index)d=[&U]%(tree)s"
+TREE_TEMPLATE = "Tree tree%(index)d=%(tree)s"
 
 
 def parse(handle):

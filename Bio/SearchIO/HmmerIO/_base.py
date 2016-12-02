@@ -9,9 +9,6 @@ from Bio._py3k import _as_bytes
 from Bio.SearchIO._index import SearchIndexer
 
 
-__docformat__ = "restructuredtext en"
-
-
 class _BaseHmmerTextIndexer(SearchIndexer):
 
     """Base indexer class for HMMER plain text output."""
@@ -21,6 +18,7 @@ class _BaseHmmerTextIndexer(SearchIndexer):
         self._preamble = _as_bytes('')
 
     def get_raw(self, offset):
+        """Return the raw record from the file as a bytes string."""
         handle = self._handle
         qresult_raw = _as_bytes('')
 

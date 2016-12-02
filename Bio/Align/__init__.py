@@ -11,8 +11,6 @@ class, used in the Bio.AlignIO module.
 """
 from __future__ import print_function
 
-__docformat__ = "restructuredtext en"  # Don't just use plain text in epydoc API pages!
-
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import Alphabet
@@ -128,6 +126,7 @@ class MultipleSeqAlignment(_Alignment):
         >>> from Bio.Alphabet import generic_dna
         >>> from Bio.Seq import Seq
         >>> from Bio.SeqRecord import SeqRecord
+        >>> from Bio.Align import MultipleSeqAlignment
         >>> a = SeqRecord(Seq("AAAACGT", generic_dna), id="Alpha")
         >>> b = SeqRecord(Seq("AAA-CGT", generic_dna), id="Beta")
         >>> c = SeqRecord(Seq("AAAAGGT", generic_dna), id="Gamma")
@@ -145,8 +144,7 @@ class MultipleSeqAlignment(_Alignment):
         compatible "hack" so as not to disrupt existing scripts and users, but
         is deprecated and will be removed in a future release.
         """
-        if isinstance(records, Alphabet.Alphabet) \
-        or isinstance(records, Alphabet.AlphabetEncoder):
+        if isinstance(records, (Alphabet.Alphabet, Alphabet.AlphabetEncoder)):
             if alphabet is None:
                 # TODO - Remove this backwards compatible mode!
                 alphabet = records
@@ -163,8 +161,7 @@ class MultipleSeqAlignment(_Alignment):
             else:
                 raise ValueError("Invalid records argument")
         if alphabet is not None:
-            if not (isinstance(alphabet, Alphabet.Alphabet)
-            or isinstance(alphabet, Alphabet.AlphabetEncoder)):
+            if not isinstance(alphabet, (Alphabet.Alphabet, Alphabet.AlphabetEncoder)):
                 raise ValueError("Invalid alphabet argument")
             self._alphabet = alphabet
         else:
@@ -315,7 +312,7 @@ class MultipleSeqAlignment(_Alignment):
         self._records.append(record)
 
     def __add__(self, other):
-        """Combines to alignments with the same number of rows by adding them.
+        """Combines two alignments with the same number of rows by adding them.
 
         If you have two multiple sequence alignments (MSAs), there are two ways to think
         about adding them - by row or by column. Using the extend method adds by row.
@@ -387,7 +384,7 @@ class MultipleSeqAlignment(_Alignment):
             raise ValueError("When adding two alignments they must have the same length"
                              " (i.e. same number or rows)")
         alpha = Alphabet._consensus_alphabet([self._alphabet, other._alphabet])
-        merged = (left+right for left, right in zip(self, other))
+        merged = (left + right for left, right in zip(self, other))
         # Take any common annotation:
         annotations = dict()
         for k, v in self.annotations.items():
@@ -514,7 +511,7 @@ class MultipleSeqAlignment(_Alignment):
         elif isinstance(index, slice):
             # e.g. sub_align = align[i:j:k]
             return MultipleSeqAlignment(self._records[index], self._alphabet)
-        elif len(index)!=2:
+        elif len(index) != 2:
             raise TypeError("Invalid index type.")
 
         # Handle double indexing
@@ -617,8 +614,12 @@ class MultipleSeqAlignment(_Alignment):
         of Biopython..
         """
         import warnings
-        import Bio
-        warnings.warn("This method is deprecated and is provided for backwards compatibility with the old Bio.Align.Generic.Alignment object. Please use the slice notation instead, as get_column is likely to be removed in a future release of Biopython.", Bio.BiopythonDeprecationWarning)
+        from Bio import BiopythonDeprecationWarning
+        warnings.warn("This method is deprecated and is provided for backwards "
+                      "compatibility with the old Bio.Align.Generic.Alignment "
+                      "object. Please use the slice notation instead, as "
+                      "get_column is likely to be removed in a future release "
+                      "of Biopython.", BiopythonDeprecationWarning)
         return _Alignment.get_column(self, col)
 
     def add_sequence(self, descriptor, sequence, start=None, end=None,
@@ -632,8 +633,14 @@ class MultipleSeqAlignment(_Alignment):
         future release of Biopython.
         """
         import warnings
-        import Bio
-        warnings.warn("The start, end, and weight arguments are not supported! This method only provides limited backwards compatibility with the old Bio.Align.Generic.Alignment object. Please use the append method with a SeqRecord instead, as the add_sequence method is likely to be removed in a future release of Biopython.", Bio.BiopythonDeprecationWarning)
+        from Bio import BiopythonDeprecationWarning
+        warnings.warn("The start, end, and weight arguments are not supported! "
+                      "This method only provides limited backwards "
+                      "compatibility with the old Bio.Align.Generic.Alignment "
+                      "object. Please use the append method with a SeqRecord "
+                      "instead, as the add_sequence method is likely to be "
+                      "removed in a future release of Biopython.",
+                      BiopythonDeprecationWarning)
         # Should we handle start/end/strand information somehow? What for?
         # TODO - Should we handle weights somehow? See also AlignInfo code...
         if start is not None or end is not None or weight != 1.0:

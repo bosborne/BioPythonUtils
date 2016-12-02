@@ -1,5 +1,5 @@
 # Copyright 2000 by Jeffrey Chang, Brad Chapman.  All rights reserved.
-# Copyright 2006-2013 by Peter Cock.  All rights reserved.
+# Copyright 2006-2016 by Peter Cock.  All rights reserved.
 #
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
@@ -13,7 +13,7 @@ SeqRecord and SeqFeature objects (see the Biopython tutorial for details).
 
 Using Bio.GenBank directly to parse GenBank files is only useful if you want
 to obtain GenBank-specific Record objects, which is a much closer
-representation to the raw file contents that the SeqRecord alternative from
+representation to the raw file contents than the SeqRecord alternative from
 the FeatureParser (used in Bio.SeqIO).
 
 To use the Bio.GenBank parser, there are two helper functions:
@@ -37,7 +37,7 @@ Exceptions:
 
     - ParserFailureError    Exception indicating a failure in the parser (ie.
       scanner or consumer)
-    - LocationParserError   Exception indiciating a problem with the spark based
+    - LocationParserError   Exception indicating a problem with the spark based
       location parser.
 
 """
@@ -53,7 +53,6 @@ from Bio import SeqFeature
 from .utils import FeatureValueCleaner
 from .Scanner import GenBankScanner
 
-__docformat__ = "restructuredtext en"
 
 # Constants used to parse GenBank header lines
 GENBANK_INDENT = 12
@@ -97,7 +96,7 @@ _simple_location = r"\d+\.\.\d+"
 _re_simple_location = re.compile(r"^%s$" % _simple_location)
 _re_simple_compound = re.compile(r"^(join|order|bond)\(%s(,%s)*\)$"
                                  % (_simple_location, _simple_location))
-_complex_location = r"([a-zA-z][a-zA-Z0-9_]*(\.[a-zA-Z0-9]+)?\:)?(%s|%s|%s|%s|%s)" \
+_complex_location = r"([a-zA-Z][a-zA-Z0-9_\.\|]*[a-zA-Z0-9]?\:)?(%s|%s|%s|%s|%s)" \
                     % (_pair_location, _solo_location, _between_location,
                        _within_location, _oneof_location)
 _re_complex_location = re.compile(r"^%s$" % _complex_location)
@@ -132,10 +131,12 @@ assert _re_complex_location.match("41^42")  # between
 assert _re_complex_location.match("AL121804:41^42")
 assert _re_complex_location.match("AL121804:41..610")
 assert _re_complex_location.match("AL121804.2:41..610")
+assert _re_complex_location.match("AL358792.24.1.166931:3274..3461")  # lots of dots in external reference
 assert _re_complex_location.match("one-of(3,6)..101")
 assert _re_complex_compound.match("join(153490..154269,AL121804.2:41..610,AL121804.2:672..1487)")
 assert not _re_simple_compound.match("join(153490..154269,AL121804.2:41..610,AL121804.2:672..1487)")
 assert _re_complex_compound.match("join(complement(69611..69724),139856..140650)")
+assert _re_complex_compound.match("join(complement(AL354868.10.1.164018:80837..81016),complement(AL354868.10.1.164018:80539..80835))")
 
 # Trans-spliced example from NC_016406, note underscore in reference name:
 assert _re_complex_location.match("NC_016402.1:6618..6676")
@@ -213,9 +214,9 @@ def _pos(pos_str, offset=0):
 
     """
     if pos_str.startswith("<"):
-        return SeqFeature.BeforePosition(int(pos_str[1:])+offset)
+        return SeqFeature.BeforePosition(int(pos_str[1:]) + offset)
     elif pos_str.startswith(">"):
-        return SeqFeature.AfterPosition(int(pos_str[1:])+offset)
+        return SeqFeature.AfterPosition(int(pos_str[1:]) + offset)
     elif _re_within_position.match(pos_str):
         s, e = pos_str[1:-1].split(".")
         s = int(s) + offset
@@ -227,8 +228,8 @@ def _pos(pos_str, offset=0):
         return SeqFeature.WithinPosition(default, left=s, right=e)
     elif _re_oneof_position.match(pos_str):
         assert pos_str.startswith("one-of(")
-        assert pos_str[-1]==")"
-        parts = [SeqFeature.ExactPosition(int(pos)+offset)
+        assert pos_str[-1] == ")"
+        parts = [SeqFeature.ExactPosition(int(pos) + offset)
                  for pos in pos_str[7:-1].split(",")]
         if offset == -1:
             default = min(int(pos) for pos in parts)
@@ -236,7 +237,7 @@ def _pos(pos_str, offset=0):
             default = max(int(pos) for pos in parts)
         return SeqFeature.OneOfPosition(default, choices=parts)
     else:
-        return SeqFeature.ExactPosition(int(pos_str)+offset)
+        return SeqFeature.ExactPosition(int(pos_str) + offset)
 
 
 def _loc(loc_str, expected_seq_length, strand):
@@ -273,7 +274,17 @@ def _loc(loc_str, expected_seq_length, strand):
     Traceback (most recent call last):
        ...
     ValueError: Invalid between location '123^456'
+
+    You can optionally provide a reference name:
+
+    >>> _loc("AL391218.9:105173..108462", 2000000, 1)
+    FeatureLocation(ExactPosition(105172), ExactPosition(108462), strand=1, ref='AL391218.9')
+
     """
+    if ":" in loc_str:
+        ref, loc_str = loc_str.split(":")
+    else:
+        ref = None
     try:
         s, e = loc_str.split("..")
     except ValueError:
@@ -287,18 +298,18 @@ def _loc(loc_str, expected_seq_length, strand):
             # NOTE - We can imagine between locations like "2^4", but this
             # is just "3".  Similarly, "2^5" is just "3..4"
             s, e = loc_str.split("^")
-            if int(s)+1==int(e):
+            if int(s) + 1 == int(e):
                 pos = _pos(s)
-            elif int(s)==expected_seq_length and e=="1":
+            elif int(s) == expected_seq_length and e == "1":
                 pos = _pos(s)
             else:
                 raise ValueError("Invalid between location %s" % repr(loc_str))
-            return SeqFeature.FeatureLocation(pos, pos, strand)
+            return SeqFeature.FeatureLocation(pos, pos, strand, ref=ref)
         else:
             # e.g. "123"
             s = loc_str
             e = loc_str
-    return SeqFeature.FeatureLocation(_pos(s, -1), _pos(e), strand)
+    return SeqFeature.FeatureLocation(_pos(s, -1), _pos(e), strand, ref=ref)
 
 
 def _split_compound_loc(compound_loc):
@@ -336,11 +347,11 @@ def _split_compound_loc(compound_loc):
             while part.count("(") > part.count(")"):
                 assert "one-of(" in part, (part, compound_loc)
                 i = compound_loc.find(")")
-                part += compound_loc[:i+1]
-                compound_loc = compound_loc[i+1:]
+                part += compound_loc[:i + 1]
+                compound_loc = compound_loc[i + 1:]
             if compound_loc.startswith(".."):
                 i = compound_loc.find(",")
-                if i==-1:
+                if i == -1:
                     part += compound_loc
                     compound_loc = ""
                 else:
@@ -349,8 +360,8 @@ def _split_compound_loc(compound_loc):
             while part.count("(") > part.count(")"):
                 assert part.count("one-of(") == 2
                 i = compound_loc.find(")")
-                part += compound_loc[:i+1]
-                compound_loc = compound_loc[i+1:]
+                part += compound_loc[:i + 1]
+                compound_loc = compound_loc[i + 1:]
             if compound_loc.startswith(","):
                 compound_loc = compound_loc[1:]
             assert part
@@ -538,7 +549,7 @@ class _BaseGenBankConsumer(object):
     def _split_taxonomy(self, taxonomy_string):
         """Split a string with taxonomy info into a list.
         """
-        if not taxonomy_string or taxonomy_string==".":
+        if not taxonomy_string or taxonomy_string == ".":
             # Missing data, no taxonomy
             return []
 
@@ -707,7 +718,7 @@ class _FeatureConsumer(_BaseGenBankConsumer):
         # obsolete SV line in EMBL.  For the new EMBL files we need
         # both the version suffix from the ID line and the accession
         # from the AC line.
-        if version_id.count(".")==1 and version_id.split(".")[1].isdigit():
+        if version_id.count(".") == 1 and version_id.split(".")[1].isdigit():
             self.accession(version_id.split(".")[0])
             self.version_suffix(version_id.split(".")[1])
         elif version_id:
@@ -722,7 +733,7 @@ class _FeatureConsumer(_BaseGenBankConsumer):
             PROJECT     GenomeProject:28471
 
         or::
-            
+
             PROJECT     GenomeProject:13543  GenomeProject:99999
 
         This is stored as dbxrefs in the SeqRecord to be consistent with the
@@ -769,7 +780,7 @@ class _FeatureConsumer(_BaseGenBankConsumer):
     def version_suffix(self, version):
         """Set the version to overwrite the id.
 
-        Since the verison provides the same information as the accession
+        Since the version provides the same information as the accession
         number, plus some extra info, we set this as the id if we have
         a version.
         """
@@ -948,6 +959,9 @@ class _FeatureConsumer(_BaseGenBankConsumer):
         except KeyError:
             self.data.annotations['comment'] = "\n".join(content)
 
+    def structured_comment(self, content):
+        self.data.annotations['structured_comment'] = content
+
     def features_line(self, content):
         """Get ready for the feature table when we reach the FEATURE line.
         """
@@ -1004,7 +1018,7 @@ class _FeatureConsumer(_BaseGenBankConsumer):
         if _re_simple_location.match(location_line):
             # e.g. "123..456"
             s, e = location_line.split("..")
-            cur_feature.location = SeqFeature.FeatureLocation(int(s)-1,
+            cur_feature.location = SeqFeature.FeatureLocation(int(s) - 1,
                                                               int(e),
                                                               strand)
             return
@@ -1025,84 +1039,62 @@ class _FeatureConsumer(_BaseGenBankConsumer):
             i = location_line.find("(")
             # cur_feature.location_operator = location_line[:i]
             # we can split on the comma because these are simple locations
-            sub_features = cur_feature.sub_features
-            for part in location_line[i+1:-1].split(","):
+            locs = []
+            for part in location_line[i + 1:-1].split(","):
                 s, e = part.split("..")
-                f = SeqFeature.SeqFeature(SeqFeature.FeatureLocation(int(s)-1,
-                                                                     int(e),
-                                                                     strand),
-                        location_operator=cur_feature.location_operator,
-                        type=cur_feature.type)
-                sub_features.append(f)
-            # s = cur_feature.sub_features[0].location.start
-            # e = cur_feature.sub_features[-1].location.end
-            # cur_feature.location = SeqFeature.FeatureLocation(s,e, strand)
-            # TODO - Remove use of sub_features
+                locs.append(SeqFeature.FeatureLocation(int(s) - 1,
+                                                       int(e),
+                                                       strand))
             if strand == -1:
-                cur_feature.location = SeqFeature.CompoundLocation([f.location for f in sub_features[::-1]],
+                cur_feature.location = SeqFeature.CompoundLocation(locs[::-1],
                                                                    operator=location_line[:i])
             else:
-                cur_feature.location = SeqFeature.CompoundLocation([f.location for f in sub_features],
+                cur_feature.location = SeqFeature.CompoundLocation(locs,
                                                                    operator=location_line[:i])
             return
 
         # Handle the general case with more complex regular expressions
         if _re_complex_location.match(location_line):
             # e.g. "AL121804.2:41..610"
-            if ":" in location_line:
-                location_ref, location_line = location_line.split(":")
-                cur_feature.location = _loc(location_line, self._expected_size, strand)
-                cur_feature.location.ref = location_ref
-            else:
-                cur_feature.location = _loc(location_line, self._expected_size, strand)
+            cur_feature.location = _loc(location_line, self._expected_size, strand)
             return
 
         if _re_complex_compound.match(location_line):
             i = location_line.find("(")
             # cur_feature.location_operator = location_line[:i]
             # Can't split on the comma because of positions like one-of(1,2,3)
-            sub_features = cur_feature.sub_features
-            for part in _split_compound_loc(location_line[i+1:-1]):
+            locs = []
+            for part in _split_compound_loc(location_line[i + 1:-1]):
                 if part.startswith("complement("):
-                    assert part[-1]==")"
+                    assert part[-1] == ")"
                     part = part[11:-1]
                     assert strand != -1, "Double complement?"
                     part_strand = -1
                 else:
                     part_strand = strand
-                if ":" in part:
-                    ref, part = part.split(":")
-                else:
-                    ref = None
                 try:
                     loc = _loc(part, self._expected_size, part_strand)
                 except ValueError as err:
                     print(location_line)
                     print(part)
                     raise err
-                f = SeqFeature.SeqFeature(location=loc, ref=ref,
-                        location_operator=cur_feature.location_operator,
-                        type=cur_feature.type)
-                sub_features.append(f)
+                locs.append(loc)
             # Historically a join on the reverse strand has been represented
             # in Biopython with both the parent SeqFeature and its children
             # (the exons for a CDS) all given a strand of -1.  Likewise, for
             # a join feature on the forward strand they all have strand +1.
             # However, we must also consider evil mixed strand examples like
             # this, join(complement(69611..69724),139856..140087,140625..140650)
-            #
-            # TODO - Remove use of sub_features
-            strands = set(sf.strand for sf in sub_features)
-            if len(strands)==1:
-                strand = sub_features[0].strand
-            else:
-                strand = None  # i.e. mixed strands
             if strand == -1:
+                # Whole thing was wrapped in complement(...)
+                for l in locs:
+                    assert l.strand == -1
                 # Reverse the backwards order used in GenBank files
-                cur_feature.location = SeqFeature.CompoundLocation([f.location for f in sub_features[::-1]],
+                # with complement(join(...))
+                cur_feature.location = SeqFeature.CompoundLocation(locs[::-1],
                                                                    operator=location_line[:i])
             else:
-                cur_feature.location = SeqFeature.CompoundLocation([f.location for f in sub_features],
+                cur_feature.location = SeqFeature.CompoundLocation(locs,
                                                                    operator=location_line[:i])
             return
         # Not recognised
@@ -1203,7 +1195,7 @@ class _FeatureConsumer(_BaseGenBankConsumer):
             self.data.id = self.data.name  # Good fall back?
         elif self.data.id.count('.') == 0:
             try:
-                self.data.id+='.%i' % self.data.annotations['sequence_version']
+                self.data.id += '.%i' % self.data.annotations['sequence_version']
             except KeyError:
                 pass
 
@@ -1248,6 +1240,12 @@ class _FeatureConsumer(_BaseGenBankConsumer):
             else:
                 raise ValueError("Could not determine alphabet for seq_type %s"
                                  % self._seq_type)
+
+            # Also save the chomosome layout
+            if 'circular' in self._seq_type.lower():
+                self.data.annotations['topology'] = 'circular'
+            elif 'linear' in self._seq_type.lower():
+                self.data.annotations['topology'] = 'linear'
 
         if not sequence and self.__expected_size:
             self.data.seq = UnknownSeq(self._expected_size, seq_alphabet)
@@ -1382,6 +1380,9 @@ class _RecordConsumer(_BaseGenBankConsumer):
 
     def comment(self, content):
         self.data.comment += "\n".join(content)
+
+    def structured_comment(self, content):
+        self.data.structured_comment = content
 
     def primary_ref_line(self, content):
         """Data for the PRIMARY line"""

@@ -16,8 +16,6 @@ import xml.sax
 from xml.sax.handler import ContentHandler
 from functools import reduce
 
-__docformat__ = "restructuredtext en"
-
 
 class _XMLparser(ContentHandler):
     """Generic SAX Parser (PRIVATE).
@@ -61,7 +59,7 @@ class _XMLparser(ContentHandler):
         # Note could use try / except AttributeError
         # BUT I found often triggered by nested errors...
         if hasattr(self, method):
-            eval("self.%s()" % method)
+            getattr(self, method)()
             if self._debug > 4:
                 print("NCBIXML: Parsed:  " + method)
         elif self._debug > 3:
@@ -96,7 +94,7 @@ class _XMLparser(ContentHandler):
         # Note could use try / except AttributeError
         # BUT I found often triggered by nested errors...
         if hasattr(self, method):
-            eval("self.%s()" % method)
+            getattr(self, method)()
             if self._debug > 2:
                 print("NCBIXML: Parsed:  %s %s" % (method, self._value))
         elif self._debug > 1:
@@ -164,7 +162,7 @@ class BlastParser(_XMLparser):
         # These are required for "old" pre 2.2.14 files
         # where only <BlastOutput_query-ID>, <BlastOutput_query-def>
         # and <BlastOutput_query-len> were used.  Now they
-        # are suplemented/replaced by <Iteration_query-ID>,
+        # are supplemented/replaced by <Iteration_query-ID>,
         # <Iteration_query-def> and <Iteration_query-len>
         if not hasattr(self._blast, "query") \
         or not self._blast.query:
@@ -327,11 +325,11 @@ class BlastParser(_XMLparser):
     #     pass # XXX TODO PSI
 
     def _end_Parameters_sc_match(self):
-        """match score for nucleotide-nucleotide comparaison (-r) (PRIVATE)."""
+        """match score for nucleotide-nucleotide comparison (-r) (PRIVATE)."""
         self._parameters.sc_match = int(self._value)
 
     def _end_Parameters_sc_mismatch(self):
-        """mismatch penalty for nucleotide-nucleotide comparaison (-r) (PRIVATE)."""
+        """mismatch penalty for nucleotide-nucleotide comparison (-r) (PRIVATE)."""
         self._parameters.sc_mismatch = int(self._value)
 
     def _end_Parameters_gap_open(self):

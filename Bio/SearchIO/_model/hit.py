@@ -18,9 +18,6 @@ from ._base import _BaseSearchObject
 from .hsp import HSP
 
 
-__docformat__ = "restructuredtext en"
-
-
 class Hit(_BaseSearchObject):
 
     """Class representing a single database hit of a search result.
@@ -107,7 +104,7 @@ class Hit(_BaseSearchObject):
     # from this one
     _NON_STICKY_ATTRS = ('_items', )
 
-    def __init__(self, hsps=[], id=None, query_id=None):
+    def __init__(self, hsps=(), id=None, query_id=None):
         """Initializes a Hit object.
 
         :param hsps: HSP objects contained in the Hit object
@@ -129,6 +126,8 @@ class Hit(_BaseSearchObject):
         self._description_alt = []
         self._query_description = None
 
+        # TODO - Move this into the for look below in case
+        # hsps is a single use iterator?
         for attr in ('query_id', 'query_description', 'hit_id',
                 'hit_description'):
             # HACK: setting the if clause to '> 1' allows for empty hit objects.
@@ -161,7 +160,7 @@ class Hit(_BaseSearchObject):
         return bool(self.hsps)
 
     # Python 2:
-    __nonzero__= __bool__
+    __nonzero__ = __bool__
 
     def __contains__(self, hsp):
         return hsp in self._items
@@ -190,11 +189,11 @@ class Hit(_BaseSearchObject):
             lines.append(' HSPs: ?')
         else:
             lines.append(' HSPs: %s  %s  %s  %s  %s  %s' %
-                    ('-'*4, '-'*8, '-'*9, '-'*6, '-'*15, '-'*21))
+                    ('-' * 4, '-' * 8, '-' * 9, '-' * 6, '-' * 15, '-' * 21))
             pattern = '%11s  %8s  %9s  %6s  %15s  %21s'
             lines.append(pattern % ('#', 'E-value', 'Bit score', 'Span',
                     'Query range', 'Hit range'))
-            lines.append(pattern % ('-'*4, '-'*8, '-'*9, '-'*6, '-'*15, '-'*21))
+            lines.append(pattern % ('-' * 4, '-' * 8, '-' * 9, '-' * 6, '-' * 15, '-' * 21))
             for idx, hsp in enumerate(self.hsps):
                 # evalue
                 evalue = getattr_str(hsp, 'evalue', fmt='%.2g')
@@ -382,7 +381,7 @@ class Hit(_BaseSearchObject):
 
         """
         if func is not None:
-            hsps = [func(x) for x in self.hsps[:]] # this creates a shallow copy
+            hsps = [func(x) for x in self.hsps[:]]  # this creates a shallow copy
         else:
             hsps = self.hsps[:]
         if hsps:

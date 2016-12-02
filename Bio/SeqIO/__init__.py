@@ -1,4 +1,4 @@
-# Copyright 2006-2010 by Peter Cock.  All rights reserved.
+# Copyright 2006-2016 by Peter Cock.  All rights reserved.
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
@@ -143,7 +143,7 @@ CCCTTTTGGGTTTNTTNTTGGTAAANNNTTCCCGGGTGGGGGNGGTNNNGAAA
 Here the original file and what Biopython would output differ in the line
 wrapping. Also note that under Python 3, the get_raw method will return a
 bytes string, hence the use of decode to turn it into a (unicode) string.
-This is uncessary on Python 2.
+This is unnecessary on Python 2.
 
 Also note that the get_raw method will preserve the newline endings. This
 example FASTQ file uses Unix style endings (b"\n" only),
@@ -229,15 +229,18 @@ depending on the file format, and is best avoided unless you have a strong
 reason to do so.
 
 If you give a filename, then each time you call write() the existing file
-will be overwriten. For sequential files formats (e.g. fasta, genbank) each
+will be overwritten. For sequential files formats (e.g. fasta, genbank) each
 "record block" holds a single sequence.  For these files it would probably
 be safe to call write() multiple times by re-using the same handle.
-
 
 However, trying this for certain alignment formats (e.g. phylip, clustal,
 stockholm) would have the effect of concatenating several multiple sequence
 alignments together.  Such files are created by the PHYLIP suite of programs
 for bootstrap analysis, but it is clearer to do this via Bio.AlignIO instead.
+
+Worse, many fileformats have an explicit header and/or footer structure
+(e.g. any XMl format, and most binary file formats like SFF). Here making
+multiple calls to write() will result in an invalid file.
 
 
 Conversion
@@ -279,6 +282,11 @@ names are also used in Bio.AlignIO and include the following:
       MASE alignment format.
     - imgt    - An EMBL like format from IMGT where the feature tables are more
       indented to allow for longer feature types.
+    - pdb-seqres -  Reads a Protein Data Bank (PDB) file to determine the
+      complete protein sequence as it appears in the header (no dependencies).
+    - pdb-atom - Uses Bio.PDB to determine the (partial) protein sequence as
+      it appears in the structure based on the atom coordinate section of the
+      file (requires NumPy for Bio.PDB).
     - phd     - Output from PHRED, used by PHRAP and CONSED for input.
     - pir     - A "FASTA like" format introduced by the National Biomedical
       Research Foundation (NBRF) for the Protein Information Resource
@@ -301,14 +309,12 @@ Note that while Bio.SeqIO can read all the above file formats, it cannot
 write to all of them.
 
 You can also use any file format supported by Bio.AlignIO, such as "nexus",
-"phlip" and "stockholm", which gives you access to the individual sequences
+"phylip" and "stockholm", which gives you access to the individual sequences
 making up each alignment as SeqRecords.
 """
 
 from __future__ import print_function
 from Bio._py3k import basestring
-
-__docformat__ = "restructuredtext en"  # not just plaintext
 
 # TODO
 # - define policy on reading aligned sequences with gaps in
@@ -320,40 +326,37 @@ __docformat__ = "restructuredtext en"  # not just plaintext
 #
 # - MSF multiple alignment format, aka GCG, aka PileUp format (*.msf)
 #   http://www.bioperl.org/wiki/MSF_multiple_alignment_format
-
-"""
-FAO BioPython Developers
-------------------------
-The way I envision this SeqIO system working as that for any sequence file
-format we have an iterator that returns SeqRecord objects.
-
-This also applies to interlaced fileformats (like clustal - although that
-is now handled via Bio.AlignIO instead) where the file cannot be read record
-by record.  You should still return an iterator, even if the implementation
-could just as easily return a list.
-
-These file format specific sequence iterators may be implemented as:
-    - Classes which take a handle for __init__ and provide the __iter__ method
-    - Functions that take a handle, and return an iterator object
-    - Generator functions that take a handle, and yield SeqRecord objects
-
-It is then trivial to turn this iterator into a list of SeqRecord objects,
-an in memory dictionary, or a multiple sequence alignment object.
-
-For building the dictionary by default the id propery of each SeqRecord is
-used as the key.  You should always populate the id property, and it should
-be unique in most cases. For some file formats the accession number is a good
-choice.  If the file itself contains ambiguous identifiers, don't try and
-dis-ambiguate them - return them as is.
-
-When adding a new file format, please use the same lower case format name
-as BioPerl, or if they have not defined one, try the names used by EMBOSS.
-
-See also http://biopython.org/wiki/SeqIO_dev
-
---Peter
-"""
-
+#
+# FAO BioPython Developers
+# ------------------------
+# The way I envision this SeqIO system working as that for any sequence file
+# format we have an iterator that returns SeqRecord objects.
+#
+# This also applies to interlaced file formats (like clustal - although that
+# is now handled via Bio.AlignIO instead) where the file cannot be read record
+# by record.  You should still return an iterator, even if the implementation
+# could just as easily return a list.
+#
+# These file format specific sequence iterators may be implemented as:
+#    - Classes which take a handle for __init__ and provide the __iter__ method
+#    - Functions that take a handle, and return an iterator object
+#    - Generator functions that take a handle, and yield SeqRecord objects
+#
+# It is then trivial to turn this iterator into a list of SeqRecord objects,
+# an in memory dictionary, or a multiple sequence alignment object.
+#
+# For building the dictionary by default the id property of each SeqRecord is
+# used as the key.  You should always populate the id property, and it should
+# be unique in most cases. For some file formats the accession number is a good
+# choice.  If the file itself contains ambiguous identifiers, don't try and
+# dis-ambiguate them - return them as is.
+#
+# When adding a new file format, please use the same lower case format name
+# as BioPerl, or if they have not defined one, try the names used by EMBOSS.
+#
+# See also http://biopython.org/wiki/SeqIO_dev
+#
+# --Peter
 
 from Bio.File import as_handle
 from Bio.SeqRecord import SeqRecord
@@ -456,8 +459,14 @@ def write(sequences, handle, format):
     if format != format.lower():
         raise ValueError("Format string '%s' should be lower case" % format)
 
+    if isinstance(handle, SeqRecord):
+        raise TypeError("Check arguments, handle should NOT be a SeqRecord")
+    if isinstance(handle, list):
+        # e.g. list of SeqRecord objects
+        raise TypeError("Check arguments, handle should NOT be a list")
+
     if isinstance(sequences, SeqRecord):
-        # This raised an exception in order version of Biopython
+        # This raised an exception in older versions of Biopython
         sequences = [sequences]
 
     if format in _BinaryFormats:
@@ -477,7 +486,7 @@ def write(sequences, handle, format):
             alignment_count = AlignIO.write([alignment], fp, format)
             assert alignment_count == 1, \
                 "Internal error - the underlying writer " \
-                " should have returned 1, not %s" % repr(alignment_count)
+                " should have returned 1, not %r" % alignment_count
             count = len(alignment)
             del alignment_count, alignment
         elif format in _FormatToIterator or format in AlignIO._FormatToIterator:
@@ -487,8 +496,8 @@ def write(sequences, handle, format):
             raise ValueError("Unknown format '%s'" % format)
 
         assert isinstance(count, int), "Internal error - the underlying %s " \
-            "writer should have returned the record count, not %s" \
-            % (format, repr(count))
+            "writer should have returned the record count, not %r" \
+            % (format, count)
 
     return count
 
@@ -548,7 +557,7 @@ def parse(handle, format, alphabet=None):
     only.
     """
     # NOTE - The above docstring has some raw \n characters needed
-    # for the StringIO example, hense the whole docstring is in raw
+    # for the StringIO example, hence the whole docstring is in raw
     # string mode (see the leading r before the opening quote).
     from Bio import AlignIO
 
@@ -567,7 +576,7 @@ def parse(handle, format, alphabet=None):
         raise ValueError("Format string '%s' should be lower case" % format)
     if alphabet is not None and not (isinstance(alphabet, Alphabet) or
                                      isinstance(alphabet, AlphabetEncoder)):
-        raise ValueError("Invalid alphabet, %s" % repr(alphabet))
+        raise ValueError("Invalid alphabet, %r" % alphabet)
 
     with as_handle(handle, mode) as fp:
         # Map the file format to a sequence iterator:
@@ -602,9 +611,9 @@ def _force_alphabet(record_iterator, alphabet):
             record.seq.alphabet = alphabet
             yield record
         else:
-            raise ValueError("Specified alphabet %s clashes with "
-                             "that determined from the file, %s"
-                             % (repr(alphabet), repr(record.seq.alphabet)))
+            raise ValueError("Specified alphabet %r clashes with "
+                             "that determined from the file, %r"
+                             % (alphabet, record.seq.alphabet))
 
 
 def read(handle, format, alphabet=None):
@@ -824,7 +833,7 @@ def index(filename, format, alphabet=None, key_function=None):
     >>> records.close()
 
     Another common use case would be indexing an NCBI style FASTA file,
-    where you might want to extract the GI number from the FASTA identifer
+    where you might want to extract the GI number from the FASTA identifier
     to use as the dictionary key.
 
     Notice that unlike the to_dict() function, here the key_function does
@@ -846,7 +855,7 @@ def index(filename, format, alphabet=None, key_function=None):
         raise ValueError("Format string '%s' should be lower case" % format)
     if alphabet is not None and not (isinstance(alphabet, Alphabet) or
                                      isinstance(alphabet, AlphabetEncoder)):
-        raise ValueError("Invalid alphabet, %s" % repr(alphabet))
+        raise ValueError("Invalid alphabet, %r" % alphabet)
 
     # Map the file format to a sequence iterator:
     from ._index import _FormatToRandomAccess  # Lazy import
@@ -926,7 +935,7 @@ def index_db(index_filename, filenames=None, format=None, alphabet=None,
         raise ValueError("Format string '%s' should be lower case" % format)
     if alphabet is not None and not (isinstance(alphabet, Alphabet) or
                                      isinstance(alphabet, AlphabetEncoder)):
-        raise ValueError("Invalid alphabet, %s" % repr(alphabet))
+        raise ValueError("Invalid alphabet, %r" % alphabet)
 
     # Map the file format to a sequence iterator:
     from ._index import _FormatToRandomAccess  # Lazy import

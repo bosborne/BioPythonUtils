@@ -10,12 +10,12 @@
 
 from Bio._py3k import basestring
 
-__docformat__ = "restructuredtext en"  # Simple markup to show doctests nicely
-
 # NEEDS TO BE SYNCH WITH THE REST OF BIOPYTHON AND BIOPERL
 # In particular, the SeqRecord and BioSQL.BioSeq.DBSeqRecord classes
 # need to be in sync (this is the BioSQL "Database SeqRecord", see
 # also BioSQL.BioSeq.DBSeq which is the "Database Seq" class)
+
+_NO_SEQRECORD_COMPARISON = "SeqRecord comparison is deliberately not implemented. Explicitly compare the attributes of interest."
 
 
 class _RestrictedDict(dict):
@@ -80,7 +80,7 @@ class _RestrictedDict(dict):
         if not hasattr(value, "__len__") or not hasattr(value, "__getitem__") \
                 or (hasattr(self, "_length") and len(value) != self._length):
             raise TypeError("We only allow python sequences (lists, tuples or "
-                            "strings) of length %i." % self._length)
+                            "strings) of length {0}.".format(self._length))
         dict.__setitem__(self, key, value)
 
     def update(self, new_dict):
@@ -292,19 +292,28 @@ class SeqRecord(object):
         >>> sub_record.letter_annotations = {}
         >>> sub_record.letter_annotations
         {}
+
+        Note that if replacing the record's sequence with a sequence of a
+        different length you must first clear the letter_annotations dict.
         """)
 
     def _set_seq(self, value):
         # TODO - Add a deprecation warning that the seq should be write only?
         if self._per_letter_annotations:
-            # TODO - Make this a warning? Silently empty the dictionary?
-            raise ValueError("You must empty the letter annotations first!")
-        self._seq = value
-        try:
-            self._per_letter_annotations = _RestrictedDict(length=len(self.seq))
-        except AttributeError:
-            # e.g. seq is None
-            self._per_letter_annotations = _RestrictedDict(length=0)
+            if len(self) != len(value):
+                # TODO - Make this a warning? Silently empty the dictionary?
+                raise ValueError("You must empty the letter annotations first!")
+            else:
+                # Leave the existing per letter annotations unchanged:
+                self._seq = value
+        else:
+            self._seq = value
+            # Reset the (empty) letter annotations dict with new length:
+            try:
+                self._per_letter_annotations = _RestrictedDict(length=len(self.seq))
+            except AttributeError:
+                # e.g. seq is None
+                self._per_letter_annotations = _RestrictedDict(length=0)
 
     seq = property(fget=lambda self: self._seq,
                    fset=_set_seq,
@@ -314,7 +323,7 @@ class SeqRecord(object):
         """Returns a sub-sequence or an individual letter.
 
         Slicing, e.g. my_record[5:10], returns a new SeqRecord for
-        that sub-sequence with approriate annotation preserved.  The
+        that sub-sequence with appropriate annotation preserved.  The
         name, id and description are kept.
 
         Any per-letter-annotations are sliced to match the requested
@@ -325,7 +334,7 @@ class SeqRecord(object):
         However, the annotations dictionary and the dbxrefs list are
         not used for the new SeqRecord, as in general they may not
         apply to the subsequence.  If you want to preserve them, you
-        must explictly copy them to the new SeqRecord yourself.
+        must explicitly copy them to the new SeqRecord yourself.
 
         Using an integer index, e.g. my_record[5] is shorthand for
         extracting that letter from the sequence, my_record.seq[5].
@@ -357,8 +366,8 @@ class SeqRecord(object):
         Number of features: 1
         Per letter annotation for: secondary_structure
         Seq('MAAGVKQLADDRTLLMAGVSHDLRTPLTRIRLATEMMSEQDGYLAESINKDIEE...YLR', IUPACProtein())
-        >>> print(rec.letter_annotations["secondary_structure"])
-          S  SSSSSSHHHHHTTTHHHHHHHHHHHHHHHHHHHHHHTHHHHHHHHHHHHHHHHHHHHHTT  
+        >>> rec.letter_annotations["secondary_structure"]
+        '  S  SSSSSSHHHHHTTTHHHHHHHHHHHHHHHHHHHHHHTHHHHHHHHHHHHHHHHHHHHHTT  '
         >>> print(rec.features[0].location)
         [20:21]
 
@@ -373,8 +382,8 @@ class SeqRecord(object):
         Number of features: 1
         Per letter annotation for: secondary_structure
         Seq('RTLLMAGVSHDLRTPLTRIRLATEMMSEQD', IUPACProtein())
-        >>> print(sub.letter_annotations["secondary_structure"])
-        HHHHHTTTHHHHHHHHHHHHHHHHHHHHHH
+        >>> sub.letter_annotations["secondary_structure"]
+        'HHHHHTTTHHHHHHHHHHHHHHHHHHHHHH'
         >>> print(sub.features[0].location)
         [9:10]
 
@@ -427,11 +436,18 @@ class SeqRecord(object):
             if self.seq is None:
                 raise ValueError("If the sequence is None, we cannot slice it.")
             parent_length = len(self)
-            answer = self.__class__(self.seq[index],
-                                    id=self.id,
-                                    name=self.name,
-                                    description=self.description)
-            # TODO - The desription may no longer apply.
+            from BioSQL.BioSeq import DBSeqRecord
+            if isinstance(self, DBSeqRecord):
+                answer = SeqRecord(self.seq[index],
+                                        id=self.id,
+                                        name=self.name,
+                                        description=self.description)
+            else:
+                answer = self.__class__(self.seq[index],
+                                        id=self.id,
+                                        name=self.name,
+                                        description=self.description)
+            # TODO - The description may no longer apply.
             # It would be safer to change it to something
             # generic like "edited" or the default value.
 
@@ -586,20 +602,18 @@ class SeqRecord(object):
         """
         lines = []
         if self.id:
-            lines.append("ID: %s" % self.id)
+            lines.append("ID: {0}".format(self.id))
         if self.name:
-            lines.append("Name: %s" % self.name)
+            lines.append("Name: {0}".format(self.name))
         if self.description:
-            lines.append("Description: %s" % self.description)
+            lines.append("Description: {0}".format(self.description))
         if self.dbxrefs:
-            lines.append("Database cross-references: "
-                         + ", ".join(self.dbxrefs))
-        lines.append("Number of features: %i" % len(self.features))
+            lines.append("Database cross-references: " + ", ".join(self.dbxrefs))
+        lines.append("Number of features: {0}".format(len(self.features)))
         for a in self.annotations:
-            lines.append("/%s=%s" % (a, str(self.annotations[a])))
+            lines.append("/{0}={1}".format(a, str(self.annotations[a])))
         if self.letter_annotations:
-            lines.append("Per letter annotation for: "
-                         + ", ".join(self.letter_annotations))
+            lines.append("Per letter annotation for: " + ", ".join(self.letter_annotations))
         # Don't want to include the entire sequence,
         # and showing the alphabet is useful:
         lines.append(repr(self.seq))
@@ -634,10 +648,10 @@ class SeqRecord(object):
         annotations, letter_annotations and features are not shown (as they
         would lead to a very long string).
         """
-        return self.__class__.__name__ \
-            + "(seq=%s, id=%s, name=%s, description=%s, dbxrefs=%s)" \
-            % tuple(map(repr, (self.seq, self.id, self.name,
-                               self.description, self.dbxrefs)))
+        return "{0}(seq={1!r}, id={2!r}, name={3!r}, description={4!r}, dbxrefs={5!r})".format(
+               self.__class__.__name__,
+               self.seq, self.id, self.name,
+               self.description, self.dbxrefs)
 
     def format(self, format):
         r"""Returns the record as a string in the specified file format.
@@ -711,6 +725,27 @@ class SeqRecord(object):
         309
         """
         return len(self.seq)
+
+    def __lt__(self, other):
+        raise NotImplementedError(_NO_SEQRECORD_COMPARISON)
+
+    def __le___(self, other):
+        raise NotImplementedError(_NO_SEQRECORD_COMPARISON)
+
+    def __eq__(self, other):
+        raise NotImplementedError(_NO_SEQRECORD_COMPARISON)
+
+    def __ne__(self, other):
+        raise NotImplementedError(_NO_SEQRECORD_COMPARISON)
+
+    def __gt__(self, other):
+        raise NotImplementedError(_NO_SEQRECORD_COMPARISON)
+
+    def __ge__(self, other):
+        raise NotImplementedError(_NO_SEQRECORD_COMPARISON)
+
+    # Note Python 3 does not use __cmp__ and there is no need to
+    # define __cmp__ on Python 2 as have all of  _lt__ etc defined.
 
     # Python 3:
     def __bool__(self):
@@ -1043,7 +1078,7 @@ class SeqRecord(object):
 
         Note that if the SeqFeature annotation includes any strand specific
         information (e.g. base changes for a SNP), this information is not
-        ammended, and would need correction after the reverse complement.
+        amended, and would need correction after the reverse complement.
 
         Note trying to reverse complement a protein SeqRecord raises an
         exception:

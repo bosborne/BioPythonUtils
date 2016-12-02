@@ -24,9 +24,6 @@ from Bio.SearchIO._utils import singleitem, allitems, fullcascade, \
 from ._base import _BaseHSP
 
 
-__docformat__ = "restructuredtext en"
-
-
 class HSP(_BaseHSP):
 
     """Class representing high-scoring region(s) between query and hit.
@@ -253,7 +250,7 @@ class HSP(_BaseHSP):
     # from this one
     _NON_STICKY_ATTRS = ('_items', )
 
-    def __init__(self, fragments=[]):
+    def __init__(self, fragments=()):
         """Initializes an HSP object.
 
         :param fragments: fragments contained in the HSP object
@@ -269,6 +266,8 @@ class HSP(_BaseHSP):
         if not fragments:
             raise ValueError("HSP objects must have at least one HSPFragment "
                     "object.")
+        # TODO - Move this into the for look in case hsps is a single use
+        # iterable?
         # check that all fragments contain the same IDs, descriptions, alphabet
         for attr in ('query_id', 'query_description', 'hit_id',
                 'hit_description', 'alphabet'):
@@ -299,7 +298,7 @@ class HSP(_BaseHSP):
         return bool(self._items)
 
     # Python 2:
-    __nonzero__= __bool__
+    __nonzero__ = __bool__
 
     def __str__(self):
 
@@ -319,10 +318,10 @@ class HSP(_BaseHSP):
                     self.fragments[0]._str_aln()])
         else:
             lines.append('  Fragments: %s  %s  %s  %s' %
-                    ('-'*3, '-'*14, '-'*22, '-'*22))
+                    ('-' * 3, '-' * 14, '-' * 22, '-' * 22))
             pattern = '%16s  %14s  %22s  %22s'
             lines.append(pattern % ('#', 'Span', 'Query range', 'Hit range'))
-            lines.append(pattern % ('-'*3, '-'*14, '-'*22, '-'*22))
+            lines.append(pattern % ('-' * 3, '-' * 14, '-' * 22, '-' * 22))
             for idx, block in enumerate(self.fragments):
                 # set hsp line and table
                 # alignment span
@@ -481,7 +480,7 @@ class HSP(_BaseHSP):
         inter_coords = []
         for idx, coord in enumerate(coords[:-1]):
             start = startfunc(coords[idx])
-            end = endfunc(coords[idx+1])
+            end = endfunc(coords[idx + 1])
             inter_coords.append((min(start, end), max(start, end)))
 
         return inter_coords
@@ -804,7 +803,7 @@ class HSPFragment(_BaseHSP):
         """
         assert seq_type in ('hit', 'query')
         if seq is None:
-            return seq # return immediately if seq is None
+            return seq  # return immediately if seq is None
         else:
             if not isinstance(seq, (basestring, SeqRecord)):
                 raise TypeError("%s sequence must be a string or a SeqRecord"

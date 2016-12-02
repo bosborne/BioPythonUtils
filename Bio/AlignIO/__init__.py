@@ -1,4 +1,4 @@
-# Copyright 2008-2010 by Peter Cock.  All rights reserved.
+# Copyright 2008-2016 by Peter Cock.  All rights reserved.
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
@@ -84,7 +84,7 @@ overwrite the existing file each time.
 Conversion
 ----------
 The Bio.AlignIO.convert(...) function allows an easy interface for simple
-alignnment file format conversions. Additionally, it may use file format
+alignment file format conversions. Additionally, it may use file format
 specific optimisations so this should be the fastest way too.
 
 In general however, you can combine the Bio.AlignIO.parse(...) function with
@@ -126,8 +126,6 @@ same length.
 
 from __future__ import print_function
 from Bio._py3k import basestring
-
-__docformat__ = "restructuredtext en"  # not just plaintext
 
 # TODO
 # - define policy on reading aligned sequences with gaps in
@@ -220,8 +218,8 @@ def write(alignments, handle, format):
             count = 0
             for alignment in alignments:
                 if not isinstance(alignment, Alignment):
-                    raise TypeError(
-                        "Expect a list or iterator of Alignment objects.")
+                    raise TypeError("Expect a list or iterator of Alignment "
+                                    "objects, got: %r" % alignment)
                 SeqIO.write(alignment, fp, format)
                 count += 1
         elif format in _FormatToIterator or format in SeqIO._FormatToIterator:
@@ -266,7 +264,7 @@ def _SeqIO_to_alignment_iterator(handle, format, alphabet=None, seq_count=None):
             if len(records) == seq_count:
                 yield MultipleSeqAlignment(records, alphabet)
                 records = []
-        if len(records) > 0:
+        if records:
             raise ValueError("Check seq_count argument, not enough sequences?")
     else:
         # Must assume that there is a single alignment using all
@@ -274,7 +272,6 @@ def _SeqIO_to_alignment_iterator(handle, format, alphabet=None, seq_count=None):
         records = list(SeqIO.parse(handle, format, alphabet))
         if records:
             yield MultipleSeqAlignment(records, alphabet)
-    raise StopIteration
 
 
 def _force_alphabet(alignment_iterator, alphabet):

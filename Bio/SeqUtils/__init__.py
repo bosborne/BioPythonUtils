@@ -3,7 +3,7 @@
 # thomas@cbs.dtu.dk, Cecilia.Alsmark@ebc.uu.se
 # Copyright 2001 by Thomas Sicheritz-Ponten and Cecilia Alsmark.
 # Revisions copyright 2014 by Markus Piotrowski.
-# Revisions copyright 2014 by Peter Cock.
+# Revisions copyright 2014-2016 by Peter Cock.
 # All rights reserved.
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
@@ -21,7 +21,6 @@ from Bio import Alphabet
 from Bio.Alphabet import IUPAC
 from Bio.Data import IUPACData
 
-__docformat__ = "restructuredtext en"
 
 ######################################
 # DNA
@@ -42,9 +41,9 @@ def GC(seq):
 
     Note that this will return zero for an empty sequence.
     """
+    gc = sum(seq.count(x) for x in ['G', 'C', 'g', 'c', 'S', 's'])
     try:
-        gc = sum(seq.count(x) for x in ['G', 'C', 'g', 'c', 'S', 's'])
-        return gc*100.0/len(seq)
+        return gc * 100.0 / len(seq)
     except ZeroDivisionError:
         return 0.0
 
@@ -62,12 +61,12 @@ def GC123(seq):
     Copes with mixed case sequences, but does NOT deal with ambiguous
     nucleotides.
     """
-    d= {}
+    d = {}
     for nt in ['A', 'T', 'G', 'C']:
         d[nt] = [0, 0, 0]
 
     for i in range(0, len(seq), 3):
-        codon = seq[i:i+3]
+        codon = seq[i:i + 3]
         if len(codon) < 3:
             codon += '  '
         for pos in range(0, 3):
@@ -79,15 +78,15 @@ def GC123(seq):
     nall = 0
     for i in range(0, 3):
         try:
-            n = d['G'][i] + d['C'][i] +d['T'][i] + d['A'][i]
-            gc[i] = (d['G'][i] + d['C'][i])*100.0/n
-        except:
+            n = d['G'][i] + d['C'][i] + d['T'][i] + d['A'][i]
+            gc[i] = (d['G'][i] + d['C'][i]) * 100.0 / n
+        except Exception:  # TODO - ValueError?
             gc[i] = 0
 
         gcall = gcall + d['G'][i] + d['C'][i]
         nall = nall + n
 
-    gcall = 100.0*gcall/nall
+    gcall = 100.0 * gcall / nall
     return gcall, gc[0], gc[1], gc[2]
 
 
@@ -105,7 +104,7 @@ def GC_skew(seq, window=100):
         s = seq[i: i + window]
         g = s.count('G') + s.count('g')
         c = s.count('C') + s.count('c')
-        skew = (g-c)/float(g+c)
+        skew = (g - c) / float(g + c)
         values.append(skew)
     return values
 
@@ -114,9 +113,9 @@ def xGC_skew(seq, window=1000, zoom=100,
                          r=300, px=100, py=100):
     """Calculates and plots normal and accumulated GC skew (GRAPHICS !!!)."""
     try:
-        import Tkinter as tkinter # Python 2
+        import Tkinter as tkinter  # Python 2
     except ImportError:
-        import tkinter # Python 3
+        import tkinter  # Python 3
 
     yscroll = tkinter.Scrollbar(orient=tkinter.VERTICAL)
     xscroll = tkinter.Scrollbar(orient=tkinter.HORIZONTAL)
@@ -152,8 +151,8 @@ def xGC_skew(seq, window=1000, zoom=100,
         r1 = r
         acc += gc
         # GC skew
-        alpha = pi - (2*pi*start)/len(seq)
-        r2 = r1 - gc*zoom
+        alpha = pi - (2 * pi * start) / len(seq)
+        r2 = r1 - gc * zoom
         x1 = X0 + r1 * sin(alpha)
         y1 = Y0 + r1 * cos(alpha)
         x2 = X0 + r2 * sin(alpha)
@@ -209,18 +208,19 @@ def nt_search(seq, subseq):
 # {{{
 
 
-def seq3(seq, custom_map={'*': 'Ter'}, undef_code='Xaa'):
+def seq3(seq, custom_map=None, undef_code='Xaa'):
     """Turn a one letter code protein sequence into one with three letter codes.
 
-    The single input argument 'seq' should be a protein sequence using single
-    letter codes, either as a python string or as a Seq or MutableSeq object.
+    The single required input argument 'seq' should be a protein sequence using
+    single letter codes, either as a python string or as a Seq or MutableSeq
+    object.
 
     This function returns the amino acid sequence as a string using the three
     letter amino acid codes. Output follows the IUPAC standard (including
     ambiguous characters B for "Asx", J for "Xle" and X for "Xaa", and also U
     for "Sel" and O for "Pyl") plus "Ter" for a terminator given as an asterisk.
     Any unknown character (including possible gap characters), is changed into
-    'Xaa'.
+    'Xaa' by default.
 
     e.g.
 
@@ -229,7 +229,7 @@ def seq3(seq, custom_map={'*': 'Ter'}, undef_code='Xaa'):
     'MetAlaIleValMetGlyArgTrpLysGlyAlaArgTer'
 
     You can set a custom translation of the codon termination code using the
-    "custom_map" argument, e.g.
+    dictionary "custom_map" argument (which defaults to {'*': 'Ter'}), e.g.
 
     >>> seq3("MAIVMGRWKGAR*", custom_map={"*": "***"})
     'MetAlaIleValMetGlyArgTrpLysGlyAlaArg***'
@@ -247,6 +247,8 @@ def seq3(seq, custom_map={'*': 'Ter'}, undef_code='Xaa'):
 
     This function was inspired by BioPerl's seq3.
     """
+    if custom_map is None:
+        custom_map = {'*': 'Ter'}
     # not doing .update() on IUPACData dict with custom_map dict
     # to preserve its initial state (may be imported in other modules)
     threecode = dict(list(IUPACData.protein_letters_1to3_extended.items()) +
@@ -256,18 +258,19 @@ def seq3(seq, custom_map={'*': 'Ter'}, undef_code='Xaa'):
     return ''.join(threecode.get(aa, undef_code) for aa in seq)
 
 
-def seq1(seq, custom_map={'Ter': '*'}, undef_code='X'):
+def seq1(seq, custom_map=None, undef_code='X'):
     """Turns a three-letter code protein sequence into one with single letter codes.
 
-    The single input argument 'seq' should be a protein sequence using three-
-    letter codes, either as a python string or as a Seq or MutableSeq object.
+    The single required input argument 'seq' should be a protein sequence
+    using three-letter codes, either as a python string or as a Seq or
+    MutableSeq object.
 
     This function returns the amino acid sequence as a string using the one
     letter amino acid codes. Output follows the IUPAC standard (including
     ambiguous characters "B" for "Asx", "J" for "Xle", "X" for "Xaa", "U" for
     "Sel", and "O" for "Pyl") plus "*" for a terminator given the "Ter" code.
-    Any unknown character (including possible gap characters), is changed into
-    '-'.
+    Any unknown character (including possible gap characters), is changed
+    into '-' by default.
 
     e.g.
 
@@ -282,7 +285,7 @@ def seq1(seq, custom_map={'Ter': '*'}, undef_code='X'):
     'MAIVMGRWKGAR*'
 
     You can set a custom translation of the codon termination code using the
-    "custom_map" argument, e.g.
+    dictionary "custom_map" argument (defaulting to {'Ter': '*'}), e.g.
 
     >>> seq1("MetAlaIleValMetGlyArgTrpLysGlyAlaArg***", custom_map={"***": "*"})
     'MAIVMGRWKGAR*'
@@ -299,13 +302,15 @@ def seq1(seq, custom_map={'Ter': '*'}, undef_code='X'):
     'MAIVMGRWKGAXXR*'
 
     """
+    if custom_map is None:
+        custom_map = {'Ter': '*'}
     # reverse map of threecode
     # upper() on all keys to enable caps-insensitive input seq handling
     onecode = dict((k.upper(), v) for k, v in
                    IUPACData.protein_letters_3to1_extended.items())
     # add the given termination codon code and custom maps
     onecode.update((k.upper(), v) for (k, v) in custom_map.items())
-    seqlist = [seq[3*i:3*(i+1)] for i in range(len(seq) // 3)]
+    seqlist = [seq[3 * i:3 * (i + 1)] for i in range(len(seq) // 3)]
     return ''.join(onecode.get(aa.upper(), undef_code) for aa in seqlist)
 
 
@@ -376,7 +381,7 @@ def molecular_weight(seq, seq_type=None, double_stranded=False, circular=False,
 
     # Find the alphabet type
     tmp_type = ''
-    if isinstance(seq, Seq) or isinstance(seq, MutableSeq):
+    if isinstance(seq, (Seq, MutableSeq)):
         base_alphabet = Alphabet._get_base_alphabet(seq.alphabet)
         if isinstance(base_alphabet, Alphabet.DNAAlphabet):
             tmp_type = 'DNA'
@@ -392,18 +397,18 @@ def molecular_weight(seq, seq_type=None, double_stranded=False, circular=False,
             raise TypeError("%s is not a valid alphabet for mass calculations"
                              % base_alphabet)
         else:
-            tmp_type = "DNA" # backward compatibity
+            tmp_type = "DNA"  # backward compatibity
         if seq_type and tmp_type and tmp_type != seq_type:
             raise ValueError("seq_type=%r contradicts %s from seq alphabet"
                              % (seq_type, tmp_type))
         seq_type = tmp_type
     elif isinstance(seq, str):
         if seq_type is None:
-            seq_type = "DNA" # backward compatibity
+            seq_type = "DNA"  # backward compatibity
     else:
         raise TypeError("Expected a string or Seq object, not seq=%r" % seq)
 
-    seq = ''.join(str(seq).split()).upper() # Do the minimum formatting
+    seq = ''.join(str(seq).split()).upper()  # Do the minimum formatting
 
     if seq_type == 'DNA':
         if monoisotopic:
@@ -430,18 +435,18 @@ def molecular_weight(seq, seq_type=None, double_stranded=False, circular=False,
         water = 18.0153
 
     try:
-        weight = sum(weight_table[x] for x in seq) - (len(seq)-1) * water
+        weight = sum(weight_table[x] for x in seq) - (len(seq) - 1) * water
         if circular:
             weight -= water
     except KeyError as e:
         raise ValueError('%s is not a valid unambiguous letter for %s'
-                         %(e, seq_type))
+                         % (e, seq_type))
     except:
         raise
 
     if seq_type in ('DNA', 'RNA') and double_stranded:
         seq = str(Seq(seq).complement())
-        weight += sum(weight_table[x] for x in seq) - (len(seq)-1) * water
+        weight += sum(weight_table[x] for x in seq) - (len(seq) - 1) * water
         if circular:
             weight -= water
     elif seq_type == 'protein' and double_stranded:
@@ -474,16 +479,16 @@ def six_frame_translations(seq, genetic_code=1):
     <BLANKLINE>
     <BLANKLINE>
 
-    """
+    """  # noqa for pep8 W291 trailing whitespace
     from Bio.Seq import reverse_complement, translate
     anti = reverse_complement(seq)
     comp = anti[::-1]
     length = len(seq)
     frames = {}
     for i in range(0, 3):
-        fragment_length = 3 * ((length-i) // 3)
-        frames[i+1] = translate(seq[i:i+fragment_length], genetic_code)
-        frames[-(i+1)] = translate(anti[i:i+fragment_length], genetic_code)[::-1]
+        fragment_length = 3 * ((length - i) // 3)
+        frames[i + 1] = translate(seq[i:i + fragment_length], genetic_code)
+        frames[-(i + 1)] = translate(anti[i:i + fragment_length], genetic_code)[::-1]
 
     # create header
     if length > 20:
@@ -498,71 +503,21 @@ def six_frame_translations(seq, genetic_code=1):
     res = header
 
     for i in range(0, length, 60):
-        subseq = seq[i:i+60]
-        csubseq = comp[i:i+60]
-        p = i//3
-        res += '%d/%d\n' % (i+1, i/3+1)
-        res += '  ' + '  '.join(frames[3][p:p+20]) + '\n'
-        res += ' ' + '  '.join(frames[2][p:p+20]) + '\n'
-        res += '  '.join(frames[1][p:p+20]) + '\n'
+        subseq = seq[i:i + 60]
+        csubseq = comp[i:i + 60]
+        p = i // 3
+        res += '%d/%d\n' % (i + 1, i / 3 + 1)
+        res += '  ' + '  '.join(frames[3][p:p + 20]) + '\n'
+        res += ' ' + '  '.join(frames[2][p:p + 20]) + '\n'
+        res += '  '.join(frames[1][p:p + 20]) + '\n'
         # seq
         res += subseq.lower() + '%5d %%\n' % int(GC(subseq))
         res += csubseq.lower() + '\n'
         # - frames
-        res += '  '.join(frames[-2][p:p+20]) +' \n'
-        res += ' ' + '  '.join(frames[-1][p:p+20]) + '\n'
-        res += '  ' + '  '.join(frames[-3][p:p+20]) + '\n\n'
+        res += '  '.join(frames[-2][p:p + 20]) + ' \n'
+        res += ' ' + '  '.join(frames[-1][p:p + 20]) + '\n'
+        res += '  ' + '  '.join(frames[-3][p:p + 20]) + '\n\n'
     return res
-
-# }}}
-
-######################################
-# FASTA file utilities
-######################
-# {{{
-
-
-def quick_FASTA_reader(file):
-    """Simple FASTA reader, returning a list of string tuples (DEPRECATED).
-
-    The single argument 'file' should be the filename of a FASTA format file.
-    This function will open and read in the entire file, constructing a list
-    of all the records, each held as a tuple of strings (the sequence name or
-    title, and its sequence).
-
-    >>> seqs = quick_FASTA_reader("Fasta/dups.fasta")
-    >>> for title, sequence in seqs:
-    ...     print("%s %s" % (title, sequence))
-    alpha ACGTA
-    beta CGTC
-    gamma CCGCC
-    alpha (again - this is a duplicate entry to test the indexing code) ACGTA
-    delta CGCGC
-
-    This function was is fast, but because it returns the data as a single in
-    memory list, is unsuitable for large files where an iterator approach is
-    preferable.
-
-    You are generally encouraged to use Bio.SeqIO.parse(handle, "fasta") which
-    allows you to iterate over the records one by one (avoiding having all the
-    records in memory at once).  Using Bio.SeqIO also makes it easy to switch
-    between different input file formats.  However, please note that rather
-    than simple strings, Bio.SeqIO uses SeqRecord objects for each record.
-
-    If you want to use simple strings, use the function SimpleFastaParser
-    added to Bio.SeqIO.FastaIO in Biopython 1.61 instead.
-    """
-    import warnings
-    from Bio import BiopythonDeprecationWarning
-    warnings.warn("The quick_FASTA_reader has been deprecated and will be "
-                  "removed in a future release of Biopython. Please try "
-                  "function SimpleFastaParser from Bio.SeqIO.FastaIO "
-                  "instead.", BiopythonDeprecationWarning)
-    from Bio.SeqIO.FastaIO import SimpleFastaParser
-    with open(file) as handle:
-        entries = list(SimpleFastaParser(handle))
-    return entries
-
 
 # }}}
 

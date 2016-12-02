@@ -1,4 +1,4 @@
-# Copyright 2008-2011 by Peter Cock.  All rights reserved.
+# Copyright 2008-2016 by Peter Cock.  All rights reserved.
 #
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
@@ -10,7 +10,7 @@ Bio.SeqIO functions if you want to work directly with the gapped sequences).
 
 This module contains a parser for the pairwise alignments produced by Bill
 Pearson's FASTA tools, for use from the Bio.AlignIO interface where it is
-refered to as the "fasta-m10" file format (as we only support the machine
+referred to as the "fasta-m10" file format (as we only support the machine
 readable output format selected with the -m 10 command line option).
 
 This module does NOT cover the generic "fasta" file format originally
@@ -27,7 +27,6 @@ from Bio.Align import MultipleSeqAlignment
 from Bio.Alphabet import single_letter_alphabet, generic_dna, generic_protein
 from Bio.Alphabet import Gapped
 
-__docformat__ = "restructuredtext en"
 
 def _extract_alignment_region(alignment_seq_with_flanking, annotation):
     """Helper function for the main parsing code (PRIVATE).
@@ -110,7 +109,7 @@ def FastaM10Iterator(handle, alphabet=single_letter_alphabet):
                              % (query_id, match_id))
         assert query_tags, query_tags
         assert match_tags, match_tags
-        evalue = align_tags.get("fa_expect", None)
+        evalue = align_tags.get("fa_expect")
         q = "?"  # Just for printing len(q) in debug below
         m = "?"  # Just for printing len(m) in debug below
         tool = global_tags.get("tool", "").upper()
@@ -216,7 +215,7 @@ def FastaM10Iterator(handle, alphabet=single_letter_alphabet):
                 # query >>><<< marker line.
                 yield build_hsp()
             state = state_NONE
-            query_descr = line[line.find(">>>")+3:].strip()
+            query_descr = line[line.find(">>>") + 3:].strip()
             query_id = query_descr.split(None, 1)[0]
             match_id = None
             header_tags = {}
@@ -616,7 +615,7 @@ Function used was FASTA [version 34.26 January 12, 2007]
             print(filename)
             print("=" * len(filename))
             for i, a in enumerate(FastaM10Iterator(open(os.path.join(path, filename)))):
-                print("#%i, %s" % (i+1, a))
+                print("#%i, %s" % (i + 1, a))
                 for r in a:
                     if "-" in r.seq:
                         assert r.seq.alphabet.gap_char == "-"

@@ -6,7 +6,7 @@ import threading
 import time
 import sys
 import os
-# BioPython 1.65 is bundled with this package
+# BioPython 1.68 is bundled with this package
 sys.path.append(os.path.dirname(__file__))
 from Bio import SeqIO, Entrez
 from Bio.Seq import Seq
