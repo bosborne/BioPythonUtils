@@ -148,6 +148,7 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
                     links = Entrez.read(
                         Entrez.elink(dbfrom="taxonomy",
                                      db="nucleotide",
+                                     email=self.email,
                                      id=taxid))
                 except (IOError) as exception:
                     print(str(exception))
@@ -163,6 +164,7 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
                     try:
                         handle = Entrez.efetch(db="nucleotide",
                                                id=link['Id'],
+                                               email=self.email,
                                                rettype="gb",
                                                retmode="text")
                     except (IOError) as exception:
@@ -304,7 +306,8 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
     def do_blast(self, blast_app, blast_db, seq_record, blast_format):
         try:
             result = NCBIWWW.qblast(blast_app, blast_db,
-                                    seq_record.format('fasta'), format_type=blast_format)
+                                    seq_record.format('fasta'),
+                                    format_type=blast_format)
         except (IOError) as exception:
             print(str(exception))
             sublime.error_message(str(exception))
