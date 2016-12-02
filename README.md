@@ -84,4 +84,4 @@ Converts the selection, 1 or more GenBank entries, to Fasta format.
 
 ### Issues
 
-The interaction between the plugin and various services at NCBI are  synchronized, so Sublime Text is essentially unusable while the queries ("Download ...", "Remote BLAST") are running. Not suitable for large-scale work, need to fix this.
+The interaction between the plugin and various services at NCBI are  synchronized, so Sublime Text is essentially unusable while the queries ("Download ...", "Remote BLAST") are running. Not suitable for large-scale work.
