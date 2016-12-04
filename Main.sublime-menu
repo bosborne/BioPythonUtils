@@ -1,6 +1,6 @@
 [
     {
-        "id": "selection",
+        "id": "tools",
         "children":
         [
         {
@@ -54,12 +54,12 @@
                         "children":
                         [
                             {
-                                "command": "open_file", 
+                                "command": "open_file",
                                 "args": {"file": "${packages}/BioPythonUtils/BioPythonUtils.sublime-settings"},
                                 "caption": "Settings – Default"
                             },
                             {
-                                "command": "open_file", 
+                                "command": "open_file",
                                 "args": {"file": "${packages}/User/BioPythonUtils.sublime-settings"},
                                 "caption": "Settings – User"
                             }
