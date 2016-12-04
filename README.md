@@ -26,6 +26,8 @@ documentation, you do not need to install it.
 
 ### Commands
 
+First select the relevant text, then find the command in the Tools menu.
+
 * "Translate"
 * "Download Sequence"
 * "Download Taxon"
