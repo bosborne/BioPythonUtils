@@ -69,7 +69,7 @@ def handle_threads(threads, results=''):
             # Required, or else this loop runs so quickly that
             # the code exits, too much "recursion"
             time.sleep(.01)
-        elif thread.result != False:
+        elif thread.result is not False:
             print("Downloaded " + thread.id)
             results = results + str(thread.result)
 
