@@ -26,7 +26,7 @@ documentation, you do not need to install it.
 
 ### Commands
 
-First select the relevant text, then find the command in the Tools menu.
+First select the relevant text, then use a command in the Tools -> BioPythonUtils menu.
 
 * "Translate"
 * "Download Sequence"
@@ -58,7 +58,8 @@ Translation starts at the first codon and continues to the last, regardless of s
 
 #### "Download Sequence"
 
-Downloads sequence from [NCBI](http://www.ncbi.nlm.nih.gov) using the selected ids. Ids can be delimited by commas, returns, or space. For example:
+Downloads sequence from [NCBI](http://www.ncbi.nlm.nih.gov) using the selected ids. Ids can be delimited by commas,
+returns, or space. For example:
 ~~~~
 KC781785 2
 ~~~~
@@ -74,7 +75,8 @@ or:
 
 #### "Download Taxon"
 
-Downloads a taxon as GenBank entries from [NCBI](http://www.ncbi.nlm.nih.gov) using the selected [NCBI Taxonomy](http://www.ncbi.nlm.nih.gov/taxonomy) ids. Ids can be delimited by commas, returns, or space.
+Downloads a taxon as GenBank entries from [NCBI](http://www.ncbi.nlm.nih.gov) using the selected
+[NCBI Taxonomy](http://www.ncbi.nlm.nih.gov/taxonomy) ids. Ids can be delimited by commas, returns, or space.
 
 #### "Remote BLAST"
 
@@ -86,4 +88,5 @@ Converts the selection, 1 or more GenBank entries, to Fasta format.
 
 ### Issues
 
-The interaction between the plugin and various services at NCBI are  synchronized, so Sublime Text is essentially unusable while the queries ("Download ...", "Remote BLAST") are running. Not suitable for large-scale work.
+The interaction between the plugin and various services at NCBI are  synchronized, so Sublime Text is essentially
+unusable while the queries ("Download ...", "Remote BLAST") are running. Not suitable for large-scale work.
