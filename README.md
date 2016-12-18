@@ -30,8 +30,8 @@ First select the relevant text, then use a command in the Tools -> BioPythonUtil
 
 
 * "Translate"
-* "Download Sequence by Search"
-* "Download Sequence by Id"
+* "Get Sequences by Search"
+* "Get Sequences by Id"
 * "Download Taxon"
 * "Remote BLAST"
 * "Genbank To Fasta"
