@@ -14,9 +14,14 @@
                     "caption": "Translate"
                 },
                 {
-                    "id": "download_sequence",
-                    "command": "download_sequence",
-                    "caption": "Download Sequence"
+                    "id": "download_sequence_by_search",
+                    "command": "download_sequence_by_search",
+                    "caption": "Get Sequences by Search"
+                },
+                {
+                    "id": "download_sequence_by_id",
+                    "command": "download_sequence_by_id",
+                    "caption": "Get Sequences by Id"
                 },
                 {
                     "id": "download_taxon",

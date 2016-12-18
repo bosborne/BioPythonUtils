@@ -23,8 +23,64 @@ blast_formats = ['HTML', 'Text', 'ASN.1', 'XML']
 blast_dbs = ['nr', 'refseq', 'swissprot', 'pat', 'month', 'pdb', 'env_nr']
 
 
-# "Download Sequence"
-class DownloadSequenceCommand(sublime_plugin.TextCommand):
+# "Download Sequence by Search"
+class DownloadSequenceBySearchCommand(sublime_plugin.TextCommand):
+
+    def run(self, edit):
+
+        entrez_retmax = sublime.load_settings(
+            'BioPythonUtils.sublime-settings').get('entrez_retmax')
+
+        email_for_eutils = sublime.load_settings(
+            'BioPythonUtils.sublime-settings').get('email_for_eutils')
+
+        if not email_for_eutils:
+            sublime.error_message("Enter email address for EUtils in \
+                BioPythonUtils -> Settings - User")
+            return
+
+        for region in self.view.sel():
+
+            search_str = self.view.substr(region)
+            search_str = search_str.strip()
+
+            if not search_str:
+                sublime.error_message("No search string in selection")
+                continue
+
+            try:
+                handle = Entrez.esearch(db="nucleotide",
+                                        term=search_str,
+                                        retmax=entrez_retmax,
+                                        email=email_for_eutils)
+                ids = Entrez.read(handle)
+            except (IOError) as exception:
+                print(str(exception))
+
+            print("Entrez count: {}".format(ids['Count']))
+            dialog_result = sublime.ok_cancel_dialog(
+                "Download {} sequences?".format(ids['Count']),
+                'Download')
+
+            if dialog_result is True:
+                try:
+                    handle = Entrez.efetch(db="nucleotide",
+                                           id=ids['IdList'],
+                                           rettype="gb",
+                                           retmode="text",
+                                           retmax=entrez_retmax,
+                                           email=email_for_eutils)
+                    records = handle.read()
+                    print("Entrez download: {} records".format(ids['Count']))
+                    handle.close()
+                except (IOError) as exception:
+                    print(str(exception))
+
+                self.view.window().new_file().insert(edit, 0, records)
+
+
+# "Download Sequence by Id"
+class DownloadSequenceByIdCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
 
@@ -32,8 +88,8 @@ class DownloadSequenceCommand(sublime_plugin.TextCommand):
             'BioPythonUtils.sublime-settings').get('email_for_eutils')
 
         if not email_for_eutils:
-            sublime.error_message(
-                "Enter email address for EUtils in BioPythonUtils -> Settings - User")
+            sublime.error_message("Enter email address for EUtils \
+                in BioPythonUtils -> Settings - User")
             return
 
         for region in self.view.sel():
@@ -119,8 +175,8 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
         if email_for_eutils:
             Entrez.email = email_for_eutils
         else:
-            sublime.error_message(
-                "Enter email address for EUtils in BioPythonUtils -> Settings - User")
+            sublime.error_message("Enter email address for EUtils in \
+                BioPythonUtils -> Settings - User")
             return
 
         for region in self.view.sel():
@@ -151,8 +207,8 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
                                      id=taxid))
                 except (IOError) as exception:
                     print(str(exception))
-                    sublime.error_message(
-                        "Error retrieving sequence ids using id '" + taxid + "'")
+                    sublime.error_message("Error retrieving sequence ids \
+                        using id '" + taxid + "'")
 
                 if len(links[0]["LinkSetDb"]) == 0:
                     sublime.error_message(
@@ -167,8 +223,8 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
                                                retmode="text")
                     except (IOError) as exception:
                         print(str(exception))
-                        sublime.error_message("Error retrieving sequence using id '" +
-                                              link['Id'] + "':" + str(exception))
+                        sublime.error_message("Error retrieving sequence using id \
+                            '" + link['Id'] + "':" + str(exception))
 
                     seq_txt = seq_txt + handle.read()
 
@@ -210,9 +266,10 @@ class TranslateCommand(sublime_plugin.TextCommand):
 
                         # Copy data to the protein SeqRecord from the starting
                         # nucleotide sequence
-                        aa_seq_record = SeqRecord(aa_seq,
-                                                  id=nt_seq_record.id,
-                                                  description=nt_seq_record.description)
+                        aa_seq_record = SeqRecord(
+                            aa_seq,
+                            id=nt_seq_record.id,
+                            description=nt_seq_record.description)
                         # Collect the records
                         SeqIO.write(aa_seq_record, seqout, "fasta")
 
@@ -252,8 +309,9 @@ class TranslateCommand(sublime_plugin.TextCommand):
                         seqout.append(str(aa_seq))
                         seq_num += 1
                     else:
-                        sublime.error_message("Invalid characters in sequence "
-                                              + str(seq_num) + ": " + ''.join(invalid_chars))
+                        sublime.error_message("Invalid characters in \
+                            sequence " + str(seq_num) + ": " +
+                            ''.join(invalid_chars))
                         return
 
                 # Separate the translations with an empty line
@@ -347,8 +405,6 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
 
             # If the selection looks like Fasta
             if patt.match(seq_str):
-                # Read from a string and write to a string
-                seqout = io.StringIO()
 
                 with io.StringIO(seq_str) as seqin:
                     for seq_record in SeqIO.parse(seqin, "fasta"):
@@ -357,8 +413,8 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                         # Write the result to a new window at position 0
                         self.view.window().new_file().insert(
                             edit, 0, result.read())
-                        print(
-                            "Wrote BLAST result from Fasta format for " + seq_record.id)
+                        print("Wrote BLAST result from Fasta format for " +
+                              seq_record.id)
 
                 seqin.close()
             else:
@@ -374,8 +430,8 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                     # Write the result to a new window at position 0
                     self.view.window().new_file().insert(
                         edit, 0, result.read())
-                    print(
-                        "Wrote BLAST result from plain format for " + seq_record.id)
+                    print("Wrote BLAST result from plain format for " +
+                          seq_record.id)
 
 
 class SelectBlastDatabase(sublime_plugin.WindowCommand):

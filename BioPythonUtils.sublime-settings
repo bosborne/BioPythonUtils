@@ -1,5 +1,6 @@
 {
     "email_for_eutils": "",    // This email address will be used for EUtils queries
+    "entrez_retmax": "",       // Maximum number of Entrez records downloaded
     "remote_blast_app": "",    // blastp, blastn, blastx, tblastn, tblastx
     "remote_blast_format": "", // HTML, Text, ASN.1, XML
     "remote_blast_db": ""      // nr, refseq, swissprot, pat, month, pdb, env_nr
