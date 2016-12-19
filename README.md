@@ -7,11 +7,15 @@ BioPythonUtils
 
 If you don't have Package Control see https://sublime.wbond.net.
 
+[BioPython](http://biopython.org) 1.68 is bundled with this package, minus the Tests and
+documentation, you do not need to install it.
+
 ### Configure with your email address, and [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) defaults
 
 ~~~~
 {
     "email_for_eutils": "bio@bioteam.net",
+    "entrez_retmax": 1000,
     "remote_blast_app": "blastp",
     "remote_blast_db": "nr",
     "remote_blast_format": "Text"
@@ -20,9 +24,6 @@ If you don't have Package Control see https://sublime.wbond.net.
 
 The email address is required if you want to download from [NCBI](http://www.ncbi.nlm.nih.gov)
 using [EUtils](http://www.ncbi.nlm.nih.gov/books/NBK25500).
-
-[BioPython](http://biopython.org) 1.68 is bundled with this package, minus the Tests and
-documentation, you do not need to install it.
 
 ### Commands
 
@@ -67,8 +68,8 @@ For example:
 human[ORGN] AND AKT1[GENE]
 ~~~~
 
-The default maximum number of records downloaded is 20, if you want more than the default set
-the value for these in your "Settings - User" file ("entrez_retmax").
+The default maximum number of records downloaded is 20, if you want more than 20 set
+the value in your "Settings - User" file ("entrez_retmax").
 
 #### "Get Sequences by Id"
 
