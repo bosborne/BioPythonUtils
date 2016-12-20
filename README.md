@@ -61,8 +61,8 @@ Translation starts at the first codon and continues to the last, regardless of s
 
 #### "Get Sequences by Search"
 
-Downloads sequence from [NCBI](http://www.ncbi.nlm.nih.gov) in GenBank format using the
-selected search string, which is sent it to the [Entrez](https://www.ncbi.nlm.nih.gov/books/NBK184582/) search service.
+Queries [NCBI Nucleotide](https://www.ncbi.nlm.nih.gov/nucleotide/) using the [Entrez](https://www.ncbi.nlm.nih.gov/books/NBK184582/)
+search service and downloads the sequence results in GenBank format.
 For example:
 ~~~~
 human[ORGN] AND AKT1[GENE]
