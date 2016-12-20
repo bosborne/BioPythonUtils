@@ -64,7 +64,7 @@ class DownloadSequenceBySearchCommand(sublime_plugin.TextCommand):
             print("Entrez count: {}".format(ids['Count']))
             dialog_result = sublime.ok_cancel_dialog(
                 "Download {0} sequences? 'retmax': {1}".format(ids['Count'],
-                entrez_retmax),'Download')
+                    entrez_retmax), 'Download')
 
             if dialog_result is True:
                 try:
