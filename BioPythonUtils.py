@@ -31,6 +31,10 @@ class DownloadSequenceBySearchCommand(sublime_plugin.TextCommand):
         entrez_retmax = sublime.load_settings(
             'BioPythonUtils.sublime-settings').get('entrez_retmax')
 
+        # Default is 20
+        if not entrez_retmax:
+            entrez_retmax = 20
+
         email_for_eutils = sublime.load_settings(
             'BioPythonUtils.sublime-settings').get('email_for_eutils')
 
@@ -59,8 +63,8 @@ class DownloadSequenceBySearchCommand(sublime_plugin.TextCommand):
 
             print("Entrez count: {}".format(ids['Count']))
             dialog_result = sublime.ok_cancel_dialog(
-                "Download {} sequences?".format(ids['Count']),
-                'Download')
+                "Download {0} sequences? 'retmax': {1}".format(ids['Count'],
+                entrez_retmax),'Download')
 
             if dialog_result is True:
                 try:
