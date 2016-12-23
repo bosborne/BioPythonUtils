@@ -59,7 +59,7 @@ FEATURES             Location/Qualifiers
      mat_peptide     1033..1698
                      /gene="HA"
                      /product="HA2"
-ORIGIN      
+ORIGIN
         1 atgaaggcaa tactagtagt tctgctatat acatttgcaa ccgcaaatgc agacacatta
        61 tgtataggtt atcatgcgaa caattcaaca gacactgtag acacagtact agaaaagaat
       121 gtaacagtaa cacactctgt taaccttcta gaagacaagc ataacgggaa actatgcaaa
@@ -164,7 +164,7 @@ FEATURES             Location/Qualifiers
                      TNGTSKIKMKWGMEMRRCLLQSLQQIESMIEAESSVKEKDMTKEFFENKSETWPIGES
                      PRGVEEGSIGKVCRTLLAKSVFNSLYASPQLEGFSAESRKLLLIVQALRDNLEPGTFD
                      LGGLYEAIEECLINDPWVLLNASWFNSFLTHALK"
-ORIGIN      
+ORIGIN
         1 atggaagact ttgtgcgaca atgcttcaat ccaatgatcg tcgagcttgc ggaaaaggca
        61 atgaaagaat atggggaaga tccgaaaatc gaaactaaca agtttgctgc aatatgcaca
       121 catttggaag tttgtttcat gtattcggat ttccatttca tcgacgaacg gggtgaatca

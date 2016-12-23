@@ -64,7 +64,7 @@ class DownloadSequenceBySearchCommand(sublime_plugin.TextCommand):
             print("Entrez count: {}".format(ids['Count']))
             dialog_result = sublime.ok_cancel_dialog(
                 "Download {0} sequences? 'retmax': {1}".format(ids['Count'],
-                    entrez_retmax), 'Download')
+                                                               entrez_retmax), 'Download')
 
             if dialog_result is True:
                 try:
@@ -216,24 +216,33 @@ class DownloadTaxonCommand(sublime_plugin.TextCommand):
 
                 if len(links[0]["LinkSetDb"]) == 0:
                     sublime.error_message(
-                        "No sequences retrieved with id " + taxid)
+                        "No sequences found with id " + taxid)
                     return
 
+                nt_ids = list()
                 for link in links[0]["LinkSetDb"][0]["Link"]:
+                    nt_ids.append(link["Id"])
+
+                print("Entrez count: {}".format(len(nt_ids)))
+                dialog_result = sublime.ok_cancel_dialog(
+                    "Download {} sequences?".format(len(nt_ids)), 'Download')
+
+                if dialog_result is True:
                     try:
                         handle = Entrez.efetch(db="nucleotide",
-                                               id=link['Id'],
+                                               id=nt_ids,
                                                rettype="gb",
                                                retmode="text")
                     except (IOError) as exception:
                         print(str(exception))
-                        sublime.error_message("Error retrieving sequence using id \
-                            '" + link['Id'] + "':" + str(exception))
+                        sublime.error_message("Error retrieving sequences using id \
+                            '" + taxid + "':" + str(exception))
 
-                    seq_txt = seq_txt + handle.read()
+                    seq_txt = handle.read()
 
-            # Write the fasta string to a new window at position 0
-            self.view.window().new_file().insert(edit, 0, seq_txt)
+                    # Write the fasta string to a new window at position 0
+                    if seq_txt:
+                        self.view.window().new_file().insert(edit, 0, seq_txt)
 
 
 # "Translate"
