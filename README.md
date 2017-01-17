@@ -99,7 +99,7 @@ Sends the selected Fasta format or "plain" sequence(s) to the [BLAST server at N
 
 #### "Genbank To Fasta"
 
-Converts the selection, 1 or more GenBank format entries, to Fasta format.
+Creates Fasta format records from the selection, 1 or more GenBank format entries.
 
 ### Issues
 
