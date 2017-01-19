@@ -24,6 +24,30 @@
         }
     },
     {
+    "caption": "BioPythonUtils: Remote Blast",
+    "command": "remote_blast"
+    },
+    {
+    "caption": "BioPythonUtils: Genbank To Fasta",
+    "command": "genbank_to_fasta"
+    },
+    {
+    "caption": "BioPythonUtils: Translate",
+    "command": "translate"
+    },
+    {
+    "caption": "BioPythonUtils: Get Sequences by Search",
+    "command": "download_sequence_by_search"
+    },
+    {
+    "caption": "BioPythonUtils: Get Sequences by Taxon",
+    "command": "download_sequence_by_taxon"
+    },
+    {
+    "caption": "BioPythonUtils: Get Sequences by Id",
+    "command": "download_sequence_by_id"
+    },
+    {
     "caption": "BioPythonUtils: Select Remote BLAST database",
     "command": "select_blast_database"
     },

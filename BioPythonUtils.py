@@ -64,7 +64,8 @@ class DownloadSequenceBySearchCommand(sublime_plugin.TextCommand):
             print("Entrez count: {}".format(ids['Count']))
             dialog_result = sublime.ok_cancel_dialog(
                 "Download {0} sequences? 'retmax': {1}".format(ids['Count'],
-                    entrez_retmax), 'Download')
+                                                               entrez_retmax),
+                'Download')
 
             if dialog_result is True:
                 try:
@@ -168,7 +169,7 @@ class EutilsCall(threading.Thread):
         self.result = False
 
 
-# "Download Taxon"
+# "Download Sequence by Taxon"
 class DownloadSequenceByTaxonCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
@@ -431,8 +432,8 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
 
                 seqin.close()
             else:
-                # Assume it's plain sequence and use an incrementing number as
-                # an id
+                # Assume it's "plain" format and use an incrementing
+                # number as an id
                 seq_id = 1
                 for seq_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
                     seq_str = re.sub("[^a-zA-Z]", "", seq_str)
