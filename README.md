@@ -95,7 +95,8 @@ Downloads a taxon as GenBank format entries from [NCBI](http://www.ncbi.nlm.nih.
 
 #### "Remote BLAST"
 
-Sends the selected Fasta format or "plain" sequence(s) to the [BLAST server at NCBI](http://blast.ncbi.nlm.nih.gov/Blast.cgi) and retrieves the results. Set the application, database, and result format using the Command Palette. You can also set default values for these in your "Settings - User" file ("remote_blast_app", "remote_blast_db", "remote_blast_format").
+Sends the selected Fasta format or "plain" sequence(s) to the [BLAST server at NCBI](http://blast.ncbi.nlm.nih.gov/Blast.cgi) and retrieves the results. Set the application, database, and result format using the Command Palette. You can also set default values
+for these in your "Settings - User" file ("remote_blast_app", "remote_blast_db", "remote_blast_format").
 
 #### "Genbank To Fasta"
 
