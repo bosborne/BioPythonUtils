@@ -1,0 +1,12 @@
+{
+  "root": {
+    "sublime_text": "*",
+    "dependencies": [],
+    "platforms": [
+      "*"
+    ],
+    "description": "BioPython Utilities for Sublime Text 3",
+    "url": "https://github.com/bosborne/BioPythonUtils",
+    "version": "2017-01-19_12-21"
+  }
+}
