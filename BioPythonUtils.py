@@ -16,10 +16,10 @@ from Bio.Alphabet import IUPAC
 from Bio.Blast import NCBIWWW
 
 # Get BLAST details from the JSON config file
-app_info = json.load(open(os.path.join(os.path.dirname(__file__),
-                                       "config.json")))
-blast_formats = app_info['blast_formats']
-blast_info = app_info['blast_info']
+blast_formats = json.load(open(os.path.join(os.path.dirname(__file__),
+                                            "config.json")))['blast_formats']
+blast_info = json.load(open(os.path.join(os.path.dirname(__file__),
+                                         "config.json")))['blast_info']
 # Globals which are used or set by show_quick_panel()
 blast_db = None
 blast_app = None
