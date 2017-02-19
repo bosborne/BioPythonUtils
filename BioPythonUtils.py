@@ -6,6 +6,7 @@ import threading
 import time
 import sys
 import os
+import json
 # BioPython 1.68 is bundled with this package
 sys.path.append(os.path.dirname(__file__))
 from Bio import SeqIO, Entrez
@@ -14,13 +15,15 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
 from Bio.Blast import NCBIWWW
 
-# Use globals which can be set by show_quick_panel()
+# Get BLAST details from the JSON config file
+app_info = json.load(open(os.path.join(os.path.dirname(__file__),
+                                       "config.json")))
+blast_formats = app_info['blast_formats']
+blast_info = app_info['blast_info']
+# Globals which are used or set by show_quick_panel()
 blast_db = None
 blast_app = None
 blast_format = None
-blast_apps = ['blastp', 'blastn', 'blastx', 'tblastn', 'tblastx']
-blast_formats = ['HTML', 'Text', 'ASN.1', 'XML']
-blast_dbs = ['nr', 'refseq', 'swissprot', 'pat', 'month', 'pdb', 'env_nr']
 
 
 # "Download Sequence by Search"
@@ -30,10 +33,6 @@ class DownloadSequenceBySearchCommand(sublime_plugin.TextCommand):
 
         entrez_retmax = sublime.load_settings(
             'BioPythonUtils.sublime-settings').get('entrez_retmax')
-
-        # Default is 20
-        if not entrez_retmax:
-            entrez_retmax = 20
 
         email_for_eutils = sublime.load_settings(
             'BioPythonUtils.sublime-settings').get('email_for_eutils')
@@ -403,14 +402,6 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
             sublime.error_message("No BLAST database specified")
             return
 
-        if not blast_app:
-            sublime.error_message("No BLAST application specified")
-            return
-
-        if not blast_format:
-            sublime.error_message("No BLAST format specified")
-            return
-
         # 1 page is written for each report if there are multiple selections
         for region in self.view.sel():
             seq_str = self.view.substr(region)
@@ -451,41 +442,39 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
 class SelectBlastDatabase(sublime_plugin.WindowCommand):
 
     def run(self):
-        global blast_dbs
-        sublime.active_window().show_quick_panel(blast_dbs, setBlastDatabase)
+        sublime.active_window().show_quick_panel(
+            blast_info[blast_app], setBlastDatabase)
+
+
+def setBlastDatabase(index):
+    global blast_db
+    if index > -1:
+        blast_db = blast_info[blast_app][index]
 
 
 class SelectBlastApplication(sublime_plugin.WindowCommand):
 
     def run(self):
-        global blast_apps
         sublime.active_window().show_quick_panel(
-            blast_apps, setBlastApplication)
+            list(blast_info.keys()), setBlastApplication)
+
+
+def setBlastApplication(index):
+    global blast_app
+    if index > -1:
+        blast_app = list(blast_info.keys())[index]
 
 
 class SelectBlastFormat(sublime_plugin.WindowCommand):
 
     def run(self):
-        global blast_formats
         sublime.active_window().show_quick_panel(blast_formats, setBlastFormat)
 
 
 def setBlastFormat(index):
-    global blast_format, blast_formats
+    global blast_format
     if index > -1:
         blast_format = blast_formats[index]
-
-
-def setBlastDatabase(index):
-    global blast_db, blast_dbs
-    if index > -1:
-        blast_db = blast_dbs[index]
-
-
-def setBlastApplication(index):
-    global blast_app, blast_apps
-    if index > -1:
-        blast_app = blast_apps[index]
 
 
 def validate_nt(seq):
