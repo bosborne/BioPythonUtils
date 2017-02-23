@@ -8,7 +8,7 @@
   "blast_info": {
     "blastn": [
       "alu_repeats",
-      "Bacteria and Archaea",
+      "16s",
       "chromosome",
       "dbsts",
       "est",

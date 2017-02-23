@@ -491,3 +491,4 @@ def validate_aa(seq):
     seq_arr = list(seq.upper())
     invalid = list(set(seq_arr) - set(IUPAC.protein.letters))
     return invalid
+id

@@ -7,8 +7,7 @@ BioPythonUtils
 
 If you don't have Package Control see https://sublime.wbond.net.
 
-[BioPython](http://biopython.org) 1.68 is bundled with this package, minus the Tests and
-documentation, you do not need to install it.
+The [BioPython](http://biopython.org) 1.68 code is bundled with this package, you do not need to install it.
 
 ### Configure with your email address, and [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) defaults
 
