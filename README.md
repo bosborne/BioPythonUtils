@@ -1,15 +1,17 @@
 BioPythonUtils
 ==============
 
-[BioPython](http://biopython.org) Utilities for [Sublime Text 3](http://www.sublimetext.com/3)
+[BioPython](http://biopython.org) Utilities for [Sublime Text 3](http://www.sublimetext.com/3).
 
-### Install BioPythonUtils using [Package Control](https://sublime.wbond.net)
+### Install
 
-If you don't have Package Control see https://sublime.wbond.net.
+Install BioPythonUtils using [Package Control](https://sublime.wbond.net). If you don't have Package Control see https://sublime.wbond.net.
 
 The [BioPython](http://biopython.org) 1.68 code is bundled with this package, you do not need to install it.
 
-### Configure with your email address, and [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) defaults
+### Configure
+
+Add your email address and [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) defaults to your Settings file.
 
 ~~~~
 {
@@ -26,7 +28,7 @@ using [EUtils](http://www.ncbi.nlm.nih.gov/books/NBK25500).
 
 ### Commands
 
-First select the relevant text, then use a command in the Tools -> BioPythonUtils menu.
+First select the relevant text, then run a command in the Tools -> BioPythonUtils menu.
 
 
 * "Translate"
