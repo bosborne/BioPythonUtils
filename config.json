@@ -8,7 +8,6 @@
   "blast_info": {
     "blastn": [
       "alu_repeats",
-      "16s",
       "chromosome",
       "dbsts",
       "est",
@@ -47,7 +46,6 @@
     ],
     "tblastn": [
       "alu_repeats",
-      "Bacteria and Archaea",
       "chromosome",
       "dbsts",
       "est",
@@ -66,7 +64,6 @@
     ],
     "tblastx": [
       "alu_repeats",
-      "Bacteria and Archaea",
       "chromosome",
       "dbsts",
       "est",

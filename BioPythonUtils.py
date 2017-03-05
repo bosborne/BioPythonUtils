@@ -44,8 +44,7 @@ class DownloadSequenceBySearchCommand(sublime_plugin.TextCommand):
 
         for region in self.view.sel():
 
-            search_str = self.view.substr(region)
-            search_str = search_str.strip()
+            search_str = self.view.substr(region).strip()
 
             if not search_str:
                 sublime.error_message("No search string in selection")
@@ -98,8 +97,7 @@ class DownloadSequenceByIdCommand(sublime_plugin.TextCommand):
 
         for region in self.view.sel():
 
-            id_str = self.view.substr(region)
-            id_str = id_str.strip()
+            id_str = self.view.substr(region).strip()
 
             if not id_str:
                 sublime.error_message("No identifiers in selection")
@@ -185,8 +183,7 @@ class DownloadSequenceByTaxonCommand(sublime_plugin.TextCommand):
 
         for region in self.view.sel():
 
-            id_str = self.view.substr(region)
-            id_str = id_str.strip()
+            id_str = self.view.substr(region).strip()
 
             if not id_str:
                 sublime.error_message("No identifiers in selection")
@@ -251,7 +248,7 @@ class TranslateCommand(sublime_plugin.TextCommand):
     def run(self, edit):
 
         for region in self.view.sel():
-            seq_str = self.view.substr(region)
+            seq_str = self.view.substr(region).strip()
 
             # Fasta header pattern
             patt = re.compile('^>\s*\S+')
@@ -339,8 +336,7 @@ class GenbankToFastaCommand(sublime_plugin.TextCommand):
 
         for region in self.view.sel():
 
-            seq_str = self.view.substr(region)
-            seq_str = seq_str.strip()
+            seq_str = self.view.substr(region).strip()
 
             if not seq_str:
                 sublime.error_message("No selected text")
@@ -491,4 +487,3 @@ def validate_aa(seq):
     seq_arr = list(seq.upper())
     invalid = list(set(seq_arr) - set(IUPAC.protein.letters))
     return invalid
-id
