@@ -104,5 +104,5 @@ Creates Fasta format records from the selection, 1 or more GenBank format record
 
 ### Issues
 
-The interaction between the plugin and various services at NCBI are  synchronized, so Sublime Text is
-unusable while the queries ("Get Sequences ...", "Remote BLAST") are running. Not suitable for large-scale work.
+The interaction between the plugin and various services at NCBI are synchronized, so Sublime Text is
+unusable while the queries ("Get Sequences ...", "Remote BLAST") are running.
