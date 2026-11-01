@@ -36,7 +36,7 @@ SPECIAL_COMMANDS = ['charstatelabels', 'charlabels', 'taxlabels', 'taxset',
                     'charset', 'charpartition', 'taxpartition', 'matrix',
                     'tree', 'utree', 'translate', 'codonposset', 'title']
 KNOWN_NEXUS_BLOCKS = ['trees', 'data', 'characters', 'taxa', 'sets', 'codons']
-PUNCTUATION = '()[]{}/\,;:=*\'"`+-<>'
+PUNCTUATION = '()[]{}/\\,;:=*\'"`+-<>'
 MRBAYESSAFE = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_'
 WHITESPACE = ' \t\n'
 # SPECIALCOMMENTS = ['!','&','%','/','\\','@'] # original list of special comments
@@ -421,9 +421,9 @@ def _kill_comments_and_break_lines(text):
     Nested and multiline comments are allowed. [ and ] symbols within single
     or double quotes are ignored, newline ends a quote, all symbols with quotes are
     treated the same (thus not quoting inside comments like [this character ']' ends a comment])
-    Special [&...] and [\...] comments remain untouched, if not inside standard comment.
-    Quotes inside special [& and [\ are treated as normal characters,
-    but no nesting inside these special comments allowed (like [&   [\   ]]).
+    Special [&...] and [\\...] comments remain untouched, if not inside standard comment.
+    Quotes inside special [& and [\\ are treated as normal characters,
+    but no nesting inside these special comments allowed (like [&   [\\   ]]).
     ';' ist deleted from end of line.
 
     NOTE: this function is very slow for large files, and obsolete when using C extension cnexus

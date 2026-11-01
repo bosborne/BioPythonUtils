@@ -116,7 +116,7 @@ class JASPAR5(object):
 
         """
 
-        text = "%s\@%s:%s" % (self.user, self.host, self.name)
+        text = "%s\\@%s:%s" % (self.user, self.host, self.name)
 
         return text
 

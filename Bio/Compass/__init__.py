@@ -129,13 +129,13 @@ class Record(object):
 
 # Everything below is private
 
-__regex = {"names": re.compile("Ali1:\s+(\S+)\s+Ali2:\s+(\S+)\s+"),
-           "threshold": re.compile("Threshold of effective gap content in columns: (\S+)"),
-           "lengths": re.compile("length1=(\S+)\s+filtered_length1=(\S+)\s+length2=(\S+)\s+filtered_length2=(\S+)"),
-           "profilewidth": re.compile("Nseqs1=(\S+)\s+Neff1=(\S+)\s+Nseqs2=(\S+)\s+Neff2=(\S+)"),
-           "scores": re.compile("Smith-Waterman score = (\S+)\s+Evalue = (\S+)"),
-           "start": re.compile("(\d+)"),
-           "align": re.compile("^.{15}(\S+)"),
+__regex = {"names": re.compile("Ali1:\\s+(\\S+)\\s+Ali2:\\s+(\\S+)\\s+"),
+           "threshold": re.compile("Threshold of effective gap content in columns: (\\S+)"),
+           "lengths": re.compile("length1=(\\S+)\\s+filtered_length1=(\\S+)\\s+length2=(\\S+)\\s+filtered_length2=(\\S+)"),
+           "profilewidth": re.compile("Nseqs1=(\\S+)\\s+Neff1=(\\S+)\\s+Nseqs2=(\\S+)\\s+Neff2=(\\S+)"),
+           "scores": re.compile("Smith-Waterman score = (\\S+)\\s+Evalue = (\\S+)"),
+           "start": re.compile("(\\d+)"),
+           "align": re.compile("^.{15}(\\S+)"),
            "positive_alignment": re.compile("^.{15}(.+)"),
            }
 

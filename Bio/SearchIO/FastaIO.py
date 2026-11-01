@@ -66,23 +66,23 @@ The following object attributes are provided:
 +-----------------+-------------------------+----------------------------------+
 | Hit             | seq_len                 | full length of the hit sequence  |
 +-----------------+-------------------------+----------------------------------+
-| HSP             | bitscore                | \*_bits line                     |
+| HSP             | bitscore                | \\*_bits line                     |
 |                 +-------------------------+----------------------------------+
-|                 | evalue                  | \*_expect line                   |
+|                 | evalue                  | \\*_expect line                   |
 |                 +-------------------------+----------------------------------+
-|                 | ident_pct               | \*_ident line                    |
+|                 | ident_pct               | \\*_ident line                    |
 |                 +-------------------------+----------------------------------+
-|                 | init1_score             | \*_init1 line                    |
+|                 | init1_score             | \\*_init1 line                    |
 |                 +-------------------------+----------------------------------+
-|                 | initn_score             | \*_initn line                    |
+|                 | initn_score             | \\*_initn line                    |
 |                 +-------------------------+----------------------------------+
-|                 | opt_score               | \*_opt line, \*_s-w opt line     |
+|                 | opt_score               | \\*_opt line, \\*_s-w opt line     |
 |                 +-------------------------+----------------------------------+
-|                 | pos_pct                 | \*_sim line                      |
+|                 | pos_pct                 | \\*_sim line                      |
 |                 +-------------------------+----------------------------------+
-|                 | sw_score                | \*_score line                    |
+|                 | sw_score                | \\*_score line                    |
 |                 +-------------------------+----------------------------------+
-|                 | z_score                 | \*_z-score line                  |
+|                 | z_score                 | \\*_z-score line                  |
 +-----------------+-------------------------+----------------------------------+
 | HSPFragment     | aln_annotation          | al_cons block, if present        |
 | (also via HSP)  +-------------------------+----------------------------------+

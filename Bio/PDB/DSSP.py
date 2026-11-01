@@ -24,7 +24,7 @@ The DSSP codes for secondary structure used here are:
         Turn
     S
         Bend
-    \-
+    \\-
         None
 
 The following Accessible surface area (ASA) values can be used, defaulting

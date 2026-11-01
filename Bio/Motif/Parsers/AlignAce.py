@@ -47,7 +47,7 @@ def read(handle):
             seq = Seq(line.split("\t")[0], IUPAC.unambiguous_dna)
             record.current_motif.add_instance(seq)
         elif "*" in line:
-            record.current_motif.set_mask(line.strip("\n\c"))
+            record.current_motif.set_mask(line.strip("\n\\c"))
         else:
             raise ValueError(line)
     return record

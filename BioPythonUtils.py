@@ -103,7 +103,7 @@ class DownloadSequenceByIdCommand(sublime_plugin.TextCommand):
                 sublime.error_message("No identifiers in selection")
                 continue
 
-            ids = re.split('[\n\s,]+', id_str)
+            ids = re.split('[\n\\s,]+', id_str)
             threads = []
             results = ''
 
@@ -189,7 +189,7 @@ class DownloadSequenceByTaxonCommand(sublime_plugin.TextCommand):
                 sublime.error_message("No identifiers in selection")
                 continue
 
-            taxids = re.split('[\n\s,]+', id_str)
+            taxids = re.split('[\n\\s,]+', id_str)
             seq_txt = ''
 
             for taxid in taxids:
@@ -251,7 +251,7 @@ class TranslateCommand(sublime_plugin.TextCommand):
             seq_str = self.view.substr(region).strip()
 
             # Fasta header pattern
-            patt = re.compile('^>\s*\S+')
+            patt = re.compile('^>\\s*\\S+')
 
             # If the selection looks like Fasta
             if patt.match(seq_str):
@@ -294,7 +294,7 @@ class TranslateCommand(sublime_plugin.TextCommand):
                 seqout = []
                 seq_num = 1
                 # Could be more than one sequence, "MULTILINE" required
-                for nt_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
+                for nt_str in re.split('^\\s*\n', seq_str, 0, re.MULTILINE):
 
                     # Remove non-alphabetic ...
                     nt_str = re.sub(r'[^A-Za-z]+', r'', nt_str)
@@ -402,7 +402,7 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
         for region in self.view.sel():
             seq_str = self.view.substr(region)
             # Fasta header pattern
-            patt = re.compile('^>\s*\S+')
+            patt = re.compile('^>\\s*\\S+')
 
             # If the selection looks like Fasta
             if patt.match(seq_str):
@@ -422,7 +422,7 @@ class RemoteBlastCommand(sublime_plugin.TextCommand):
                 # Assume it's "plain" format and use an incrementing
                 # number as an id
                 seq_id = 1
-                for seq_str in re.split('^\s*\n', seq_str, 0, re.MULTILINE):
+                for seq_str in re.split('^\\s*\n', seq_str, 0, re.MULTILINE):
                     seq_str = re.sub("[^a-zA-Z]", "", seq_str)
                     seq_record = SeqRecord(Seq(seq_str), id=str(seq_id))
                     result = self.do_blast(

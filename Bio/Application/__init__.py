@@ -158,13 +158,13 @@ class AbstractCommandline(object):
     the full path to the binary as the first argument (cmd):
 
     >>> from Bio.Emboss.Applications import WaterCommandline
-    >>> water_cmd = WaterCommandline("C:\Program Files\EMBOSS\water.exe",
+    >>> water_cmd = WaterCommandline("C:\\Program Files\\EMBOSS\\water.exe",
     ...                              gapopen=10, gapextend=0.5,
     ...                              asequence="asis:ACCCGGGCGCGGT",
     ...                              bsequence="asis:ACCCGAGCGCGGT",
     ...                              outfile="temp_water.txt")
     >>> print(water_cmd)
-    "C:\Program Files\EMBOSS\water.exe" -outfile=temp_water.txt -asequence=asis:ACCCGGGCGCGGT -bsequence=asis:ACCCGAGCGCGGT -gapopen=10 -gapextend=0.5
+    "C:\\Program Files\\EMBOSS\\water.exe" -outfile=temp_water.txt -asequence=asis:ACCCGGGCGCGGT -bsequence=asis:ACCCGAGCGCGGT -gapopen=10 -gapextend=0.5
 
     Notice that since the path name includes a space it has automatically
     been quoted.

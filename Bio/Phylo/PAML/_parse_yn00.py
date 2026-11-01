@@ -17,9 +17,9 @@ def parse_ng86(lines, results):
     sequences = []
     for line in lines:
         # Find all floating point numbers in this line
-        line_floats_res = re.findall("-*\d+\.\d+", line)
+        line_floats_res = re.findall("-*\\d+\\.\\d+", line)
         line_floats = [float(val) for val in line_floats_res]
-        matrix_row_res = re.match("(.+)\s{5,15}", line)
+        matrix_row_res = re.match("(.+)\\s{5,15}", line)
         if matrix_row_res is not None:
             seq_name = matrix_row_res.group(1).strip()
             sequences.append(seq_name)
@@ -47,9 +47,9 @@ def parse_yn00(lines, results, sequences):
     # +- 0.0151
     for line in lines:
         # Find all floating point numbers in this line
-        line_floats_res = re.findall("-*\d+\.\d+", line)
+        line_floats_res = re.findall("-*\\d+\\.\\d+", line)
         line_floats = [float(val) for val in line_floats_res]
-        row_res = re.match("\s+(\d+)\s+(\d+)", line)
+        row_res = re.match("\\s+(\\d+)\\s+(\\d+)", line)
         if row_res is not None:
             seq1 = int(row_res.group(1))
             seq2 = int(row_res.group(2))
@@ -97,7 +97,7 @@ def parse_others(lines, results, sequences):
     seq_name1 = None
     seq_name2 = None
     for line in lines:
-        comp_res = re.match("\d+ \((.+)\) vs. \d+ \((.+)\)", line)
+        comp_res = re.match("\\d+ \\((.+)\\) vs. \\d+ \\((.+)\\)", line)
         if comp_res is not None:
             seq_name1 = comp_res.group(1)
             seq_name2 = comp_res.group(2)

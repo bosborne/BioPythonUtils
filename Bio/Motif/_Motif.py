@@ -362,7 +362,7 @@ class Motif(object):
         while True:
             ln = stream.readline()
             if "*" in ln:
-                self.set_mask(ln.strip("\n\c"))
+                self.set_mask(ln.strip("\n\\c"))
                 break
             self.add_instance(Seq(ln.strip(), self.alphabet))
 
