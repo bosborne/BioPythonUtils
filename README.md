@@ -1,6 +1,8 @@
 BioPythonUtils
 ==============
 
+**This repository is archived and no longer supported.**
+
 [BioPython](http://biopython.org) Utilities for [Sublime Text 3](http://www.sublimetext.com/3).
 
 ### Install
