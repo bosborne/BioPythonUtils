@@ -15,15 +15,23 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
 from Bio.Blast import NCBIWWW
 
-# Get BLAST details from the JSON config file
-blast_formats = json.load(open(os.path.join(os.path.dirname(__file__),
-                                            "config.json")))['blast_formats']
-blast_info = json.load(open(os.path.join(os.path.dirname(__file__),
-                                         "config.json")))['blast_info']
+# BLAST details, read from the JSON config file in plugin_loaded()
+blast_formats = []
+blast_info = {}
 # Globals which are used or set by show_quick_panel()
 blast_db = None
 blast_app = None
 blast_format = None
+
+
+# Read config.json with load_resource() rather than open() so that it is
+# found when the package is installed as a zipped .sublime-package
+def plugin_loaded():
+    global blast_formats, blast_info
+    config = json.loads(sublime.load_resource(
+        "Packages/{}/config.json".format(__package__)))
+    blast_formats = config['blast_formats']
+    blast_info = config['blast_info']
 
 
 # "Download Sequence by Search"
